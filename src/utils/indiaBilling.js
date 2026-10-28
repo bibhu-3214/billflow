@@ -1,3 +1,5 @@
+import Decimal from 'decimal.js';
+
 export const states = {
     '01': 'Jammu and Kashmir', '02': 'Himachal Pradesh', '03': 'Punjab', '04': 'Chandigarh',
     '05': 'Uttarakhand', '06': 'Haryana', '07': 'Delhi', '08': 'Rajasthan', '09': 'Uttar Pradesh',
@@ -13,7 +15,7 @@ export const today = () => {
     const date = new Date();
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
-export const paise = value => Math.round(Number(value) * 100);
+export const paise = value => new Decimal(value).times(100).toDecimalPlaces(0, Decimal.ROUND_HALF_UP).toNumber();
 export const validDate = value => /^\d{4}-\d{2}-\d{2}$/.test(value) &&
     Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value;
 export const financialYear = date => {
@@ -46,17 +48,18 @@ export const calculateInvoice = (items, { gst = false, supplierState = '', place
             throw new Error('Check price, quantity (1–10,000), discount (0–100%) and GST rate (0–40%).');
         }
         const gross = paise(price) * quantity;
-        const discountPaise = Math.round(gross * discount / 100);
+        const discountPaise = new Decimal(gross).times(discount).div(100).toDecimalPlaces(0, Decimal.ROUND_HALF_UP).toNumber();
         const taxable = gross - discountPaise;
-        const cgst = gst && !interstate ? Math.round(taxable * rate / 200) : 0;
+        const cgst = gst && !interstate ? new Decimal(taxable).times(rate).div(200).toDecimalPlaces(0, Decimal.ROUND_HALF_UP).toNumber() : 0;
         const stateTax = cgst;
-        const igst = gst && interstate ? Math.round(taxable * rate / 100) : 0;
+        const igst = gst && interstate ? new Decimal(taxable).times(rate).div(100).toDecimalPlaces(0, Decimal.ROUND_HALF_UP).toNumber() : 0;
         return { ...item, price: paise(price) / 100, quantity, discount, gstRate: rate,
             gross: gross / 100, discountAmount: discountPaise / 100, taxable: taxable / 100,
             cgst: cgst / 100, stateTax: stateTax / 100, igst: igst / 100,
             subTotal: (taxable + cgst + stateTax + igst) / 100 };
     });
     const sum = key => lineItems.reduce((total, item) => total + paise(item[key]), 0) / 100;
+    if (['gross', 'subTotal', 'taxable'].some(key => sum(key) > 1000000000000)) throw new Error('Invoice amounts cannot exceed INR 1,000,000,000,000.');
     return { lineItems, gross: sum('gross'), discountAmount: sum('discountAmount'), taxable: sum('taxable'),
         cgst: sum('cgst'), stateTax: sum('stateTax'), igst: sum('igst'), total: sum('subTotal'), localTax, interstate };
 };

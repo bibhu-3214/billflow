@@ -5,12 +5,12 @@ import { getProducts } from './productAction';
 import { getBills } from './billAction';
 import { LOGIN, LOGOUT, USER_INFORMATION } from '../actionTypes';
 
-const showError = error => Swal.fire('Unable to continue', error.message, 'error');
+const showError = error => !error.cancelled && Swal.fire('Unable to continue', error.message, 'error');
 
 export const register = (values, onSuccess) => async () => {
     try {
         await localData.register(values);
-        await Swal.fire('Workspace created', 'You can now sign in.', 'success');
+        await Swal.fire('Workspace created', localData.isCloud ? 'Check your email to verify your address, then sign in.' : 'You can now sign in.', 'success');
         onSuccess();
     } catch (error) {
         showError(error);
@@ -31,6 +31,13 @@ export const login = (values, onSuccess) => async dispatch => {
 };
 
 export const logout = () => {
+    if (localData.isCloud) return async dispatch => {
+        try {
+            await localData.clearSession();
+            dispatch({ type: LOGOUT });
+            return true;
+        } catch (error) { showError(error); return false; }
+    };
     localData.clearSession();
     return { type: LOGOUT };
 };

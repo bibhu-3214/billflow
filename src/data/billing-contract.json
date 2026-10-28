@@ -1,0 +1,9 @@
+[
+  {"name":"same-state discount", "items":[{"price":100,"quantity":2,"discount":10,"gstRate":18}], "options":{"gst":true,"supplierState":"27","placeOfSupply":"27"}, "expected":{"gross":200,"discountAmount":20,"taxable":180,"cgst":16.2,"stateTax":16.2,"igst":0,"total":212.4}},
+  {"name":"interstate GST", "items":[{"price":100,"quantity":2,"gstRate":18}], "options":{"gst":true,"supplierState":"27","placeOfSupply":"29"}, "expected":{"cgst":0,"stateTax":0,"igst":36,"total":236}},
+  {"name":"small local component rounding", "items":[{"price":0.05,"quantity":1,"gstRate":18}], "options":{"gst":true,"supplierState":"27","placeOfSupply":"27"}, "expected":{"taxable":0.05,"cgst":0,"stateTax":0,"total":0.05}},
+  {"name":"small interstate rounding", "items":[{"price":0.05,"quantity":1,"gstRate":18}], "options":{"gst":true,"supplierState":"27","placeOfSupply":"29"}, "expected":{"taxable":0.05,"igst":0.01,"total":0.06}},
+  {"name":"zero rate is known", "items":[{"price":500,"quantity":1,"gstRate":0}], "options":{"gst":true,"supplierState":"07","placeOfSupply":"07"}, "expected":{"taxable":500,"cgst":0,"stateTax":0,"igst":0,"total":500}},
+  {"name":"decimal half-paise price", "items":[{"price":1.005,"quantity":1}], "options":{}, "expected":{"gross":1.01,"total":1.01}},
+  {"name":"GST unknown remains invalid", "items":[{"price":500,"quantity":1,"gstRate":null}], "options":{"gst":true,"supplierState":"07","placeOfSupply":"07"}, "error":true}
+]

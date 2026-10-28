@@ -2,7 +2,7 @@ import Swal from 'sweetalert2';
 import localData from '../../data/localData';
 import { ADD_CUSTOMER, EDIT_CUSTOMER, GET_CUSTOMERS, REMOVE_CUSTOMER } from '../actionTypes';
 
-const showError = error => Swal.fire('Unable to update customers', error.message, 'error');
+const showError = error => !error.cancelled && Swal.fire('Unable to update customers', error.message, 'error');
 
 export const addCustomer = formData => async dispatch => {
     try {

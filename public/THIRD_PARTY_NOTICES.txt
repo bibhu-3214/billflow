@@ -1,0 +1,20 @@
+BillFlow PDF export notices
+
+jsPDF 4.2.1 - MIT
+https://github.com/parallax/jsPDF
+Full notice: licenses/jsPDF-MIT.txt
+
+jsPDF-AutoTable 5.0.8 - MIT
+https://github.com/simonbengtsson/jsPDF-AutoTable
+Full notice: licenses/jsPDF-AutoTable-MIT.txt
+
+Noto Sans Regular and Bold - SIL Open Font License 1.1
+Unmodified TTF files downloaded from the official notofonts/noto-fonts repository:
+https://github.com/notofonts/noto-fonts/tree/main/hinted/ttf/NotoSans
+Full notice: licenses/NotoSans-OFL.txt
+
+These notices are copied to the static build along with the fonts. Preserve them
+when redistributing. jsPDF's shipped LICENSE includes its bundled notices.
+The Kendo PDF/Drawing/Licensing packages and their unused dependencies were
+removed. This addresses that specific PDF dependency; it is not a claim that
+all other application dependencies have undergone a license compliance audit.

@@ -22,3 +22,74 @@ jobs:
       - run: yarn test --watchAll=false --runInBand
       - run: yarn test:tooling
       - run: yarn build
+      - run: yarn build:connected
+  api-and-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: isolated-ci-only
+          POSTGRES_DB: billflow
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:isolated-ci-only@127.0.0.1:5432/billflow
+      DJANGO_SETTINGS_MODULE: config.settings.test
+      REACT_APP_ACCOUNT_BACKEND: django
+      HOST: 127.0.0.1
+      PORT: 3000
+      BROWSER: none
+      CI: true
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with: {python-version: '3.13'}
+      - uses: actions/setup-node@v7
+        with: {node-version: '22'}
+      - run: python -m pip install -r api/requirements-dev.txt -r api/requirements-pdf-checks.txt
+      - run: ruff check api
+      - run: ruff format --check api
+      - run: python manage.py makemigrations --check --dry-run
+        working-directory: api
+      - run: python -m pytest -q
+        working-directory: api
+      - run: npm install --global yarn@1.22.22
+      - run: yarn install --frozen-lockfile --non-interactive
+      - run: yarn pdf:samples
+      - run: python scripts/verify-pdfs.py output/pdf
+      - run: yarn playwright install --with-deps chromium
+      - name: Start isolated acceptance services
+        run: |
+          mkdir -p output
+          (cd api && python -m scripts.serve_acceptance > ../output/api.log 2>&1) &
+          yarn start > output/web.log 2>&1 &
+          python scripts/wait_for_acceptance.py
+      - run: yarn test:browser
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: billflow-acceptance
+          path: output/
+          retention-days: 7
+  native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run: {working-directory: native}
+    env:
+      EXPO_NO_TELEMETRY: '1'
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with: {node-version: '22'}
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run bundle

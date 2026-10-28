@@ -1,0 +1,6 @@
+# Optional macOS/Linux development PostgreSQL binary; never used in production.
+-r requirements-dev.txt
+embedded-postgres==18.6.3
+fasteners==0.20
+platformdirs==4.13.5
+psutil==7.2.2

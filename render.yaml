@@ -1,0 +1,61 @@
+# Applying this provisions paid resources. This file alone creates nothing.
+databases:
+  - name: billflow-db
+    plan: basic-256mb
+    region: singapore
+    ipAllowList: []
+services:
+  - type: web
+    name: billflow
+    runtime: docker
+    dockerfilePath: ./api/Dockerfile
+    plan: standard
+    region: singapore
+    healthCheckPath: /api/v1/health/ready
+    preDeployCommand: python manage.py migrate --noinput
+    autoDeployTrigger: off
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: billflow-db
+          property: connectionString
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_ALLOWED_HOSTS
+        sync: false
+      - key: APP_ORIGIN
+        sync: false
+      - key: EMAIL_DELIVERY_MODE
+        value: resend
+      - key: EMAIL_FROM
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: SUPPORT_EMAIL
+        sync: false
+  - type: cron
+    name: billflow-account-mail
+    runtime: docker
+    dockerfilePath: ./api/Dockerfile
+    region: singapore
+    schedule: "*/5 * * * *"
+    dockerCommand: python manage.py deliver_mail --limit 20
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: billflow-db
+          property: connectionString
+      - key: DJANGO_SECRET_KEY
+        fromService: {type: web, name: billflow, envVarKey: DJANGO_SECRET_KEY}
+      - key: APP_ORIGIN
+        fromService: {type: web, name: billflow, envVarKey: APP_ORIGIN}
+      - key: DJANGO_ALLOWED_HOSTS
+        fromService: {type: web, name: billflow, envVarKey: DJANGO_ALLOWED_HOSTS}
+      - key: EMAIL_DELIVERY_MODE
+        value: resend
+      - key: EMAIL_FROM
+        fromService: {type: web, name: billflow, envVarKey: EMAIL_FROM}
+      - key: RESEND_API_KEY
+        fromService: {type: web, name: billflow, envVarKey: RESEND_API_KEY}
+      - key: SUPPORT_EMAIL
+        fromService: {type: web, name: billflow, envVarKey: SUPPORT_EMAIL}

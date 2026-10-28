@@ -1,0 +1,4 @@
+# Optional document QA only; not installed in the production image.
+pypdf==6.21.3
+pypdfium2==5.14.0
+pillow==13.0.0

@@ -871,3 +871,7 @@ button.hero-link:disabled { opacity: .7; cursor: wait; }
         .auth-form-panel { padding:28px 24px; }
     }
 }
+/* Connected recovery controls share the settings page's full readable measure. */
+.cloud-transfer-fields { display: grid; gap: 16px; margin-top: 20px; }
+.cloud-transfer-fields input[type='file'] { width: 100%; min-height: 44px; }
+.cloud-transfer-fields > button { justify-self: start; }

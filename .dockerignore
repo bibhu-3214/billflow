@@ -1,0 +1,14 @@
+.git
+node_modules
+build
+output
+native
+api/.venv
+api/.local
+api/tests
+api/scripts
+.env*
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+*.log

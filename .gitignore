@@ -24,3 +24,16 @@ yarn-debug.log*
 yarn-error.log*
 
 /playground
+/api/.venv/
+/api/.local/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.pyc
+.env
+/native/node_modules/
+/native/.expo/
+/native/dist/
+/native/android/
+/native/ios/
+/output/

@@ -2,7 +2,7 @@ import Swal from 'sweetalert2';
 import localData from '../../data/localData';
 import { ADD_PRODUCT, EDIT_PRODUCT, GET_PRODUCTS, REMOVE_PRODUCT } from '../actionTypes';
 
-const showError = error => Swal.fire('Unable to update products', error.message, 'error');
+const showError = error => !error.cancelled && Swal.fire('Unable to update products', error.message, 'error');
 
 export const addProduct = formData => async dispatch => {
     try {

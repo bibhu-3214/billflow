@@ -1,25 +1,35 @@
-# Deploy the portfolio demo
+# Release preparation
 
-## Netlify
+Development first. Applying render.yaml, buying a domain, enrolling in stores and activating paid services remain deferred until development acceptance and concrete resource review.
 
-The repository includes `netlify.toml` for a static deployment:
+## Prepared configuration
 
-1. Import this repository in your Netlify account.
-2. Select the branch containing these changes.
-3. Keep build command `yarn build` and publish directory `build`.
-4. Deploy. Node 22 and Yarn 1.22.22 are specified in the configuration; no OpenSSL compatibility option is required.
-5. Open the resulting HTTPS URL, click **Explore live demo**, and reload `/admin` to verify the SPA rewrite.
+api/Dockerfile builds the connected React app and serves it with Django/Gunicorn/WhiteNoise on one origin. Do not publish connected mode on a separate static origin without a reviewed proxy/auth design. Existing netlify.toml is for the local demo.
 
-No API keys or environment secrets are required. The rewrite sends client-side routes to `index.html`. Web Crypto requires HTTPS (localhost is also supported).
+render.yaml proposes a paid web service, private PostgreSQL and a scheduled account-email worker. Validate plans, region and billing at activation. This file does not establish hosted resources. Secrets stay external; migrations run before deployment; auto-deployment is disabled.
 
-## Release checklist
+## Development acceptance
 
-- Run the quality checks from the README.
-- Test sample entry, navigation, invoice creation and sign-out/reset.
-- Confirm demo mutations do not alter an existing local account.
-- Check desktop and mobile layouts and keyboard navigation.
-- Review and resolve the KendoReact PDF missing-license warning before commercial distribution.
-- Capture screenshots from the actual deployed UI with fictional sample data.
-- Add the verified live URL to the repository About field and profile README.
+1. Run web/domain/tooling checks, both builds, Python checks and real PostgreSQL tests.
+2. Exercise connected flows on desktop/tablet/phone: reload, drafts, invoice/payment, backup and server logout.
+3. Inspect long PDF invoices, credit notes, statements, logos, unsupported-glyph handling and monetary text.
+4. Run native type/transport checks and both JavaScript exports. Complete parity gaps and signed-device acceptance before mobile release.
+5. Rehearse imports, database restore, rollback and number continuity in isolated data. Local recovery does not establish managed-host recovery.
 
-A deployment configuration is not proof of a live deployment. Publish a link only after the hosted site has been checked.
+## Owner-controlled setup
+
+After development, settle brand/domain clearance and review exact resource charges. Configure HTTPS origin/hosts, a strong Django secret, verified Resend sender/domain, a receiving/reply-capable support mailbox and optional Google/Apple credentials in owner-controlled accounts.
+
+Never commit credentials or put them in public React/Expo variables. Restrict database external access; separate development/test/staging/production identities. Review actual proxy trust, edge rate limits and content-free operational alerts.
+
+## Hosted acceptance and rollback
+
+Verify HTTPS/cookies, real verification/reset delivery, quotas, worker liveness, OAuth identity/linking, account isolation, export/deletion, backup restoration, support receipt/reply and recovery/rollback.
+
+Production settings reject capture-only email, absent provider/support configuration, weak secrets and non-HTTPS origins. Provider acceptance does not prove inbox receipt.
+
+For rollback, stop writes/jobs, preserve a verified database snapshot and restore a compatible app/database pair. Do not run an old client against an incompatible schema or re-enable independent local invoice numbering after cutover.
+
+The first release is free. Team authorization, statutory retention/deletion, staff/database-operator controls, independent audit integrity and load acceptance still need business-specific decisions.
+
+No hosting, purchase, provider activation, public deployment, signing, store submission or customer communication was performed.

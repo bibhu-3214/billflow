@@ -2,7 +2,7 @@ import Swal from 'sweetalert2';
 import localData from '../../data/localData';
 import { ADD_BILL, GET_BILLS, GET_BILL_BY_ID, REMOVE_BILL } from '../actionTypes';
 
-const showError = error => Swal.fire('Unable to update invoices', error.message, 'error');
+const showError = error => !error.cancelled && Swal.fire('Unable to update invoices', error.message, 'error');
 
 export const correctInvoice = (id, values) => async dispatch => {
     try {
