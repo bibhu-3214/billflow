@@ -24,8 +24,10 @@ export default defineConfig(({ command, mode, isPreview }) => {
         server: {
             host: '127.0.0.1', port: 3000, strictPort: true,
             fs: { deny: ['.env', '.env.*', '*.{crt,pem}', '**/.git/**', '**/api/**', '**/.cache/**', '**/.venv/**'] },
+            // Preserve the browser host so Django can validate same-origin CSRF
+            // for both localhost and 127.0.0.1 without widening trusted origins.
             proxy: connected ? Object.fromEntries(['/api', '/_allauth', '/accounts'].map(path =>
-                [path, { target: env.BILLFLOW_API_TARGET || 'http://127.0.0.1:8001', changeOrigin: true }])) : {},
+                [path, { target: env.BILLFLOW_API_TARGET || 'http://127.0.0.1:8001', changeOrigin: false }])) : {},
         },
     };
 });

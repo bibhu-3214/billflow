@@ -15,7 +15,15 @@ from accounts.models import User
 if not settings.DEBUG or settings.SETTINGS_MODULE != "config.settings.test":
     raise SystemExit("Acceptance fixtures require isolated test settings.")
 call_command("migrate", verbosity=0, interactive=False)
-for name in ["acceptance", "acceptance-desktop", "acceptance-tablet", "acceptance-phone"]:
+for name in [
+    "acceptance",
+    "acceptance-desktop",
+    "acceptance-tablet",
+    "acceptance-phone",
+    "acceptance-controls-desktop",
+    "acceptance-controls-tablet",
+    "acceptance-controls-phone",
+]:
     user = User.objects.create_user(
         name + "@example.test",
         "AcceptanceOnly#4827",

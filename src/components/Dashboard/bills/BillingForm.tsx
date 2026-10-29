@@ -1,6 +1,6 @@
 import { ui } from '../../../styles/ui';
 import { type TextFieldProps, Button, TextField, MenuItem, Switch, FormControlLabel } from '../../ui/primitives';
-import type { Draft, Quotation, InvoiceLineInput } from '../../../types/domain';
+import type { Draft, Quotation, InvoiceLineInput, Product } from '../../../types/domain';
 
 interface BillingFormProps { setOpenPopup: (open: boolean) => void; initialDraft?: Draft | null; onDraftSaved?: (draft: Draft) => void; quotationMode?: boolean; onQuotationSaved?: (quote: Quotation) => void; onTemplateSaved?: () => void }
 import { asAppError } from '../../../types/domain';
@@ -12,6 +12,8 @@ import { addBill } from '../../../Redux/Actions/billAction';
 import { calculateInvoice, money, states, today, validDate } from '../../../utils/indiaBilling';
 import localData from '../../../data/localData';
 import { usePopupForm } from '../../Popup';
+import InvoiceItemPicker from './InvoiceItemPicker';
+import CustomerPicker from './CustomerPicker';
 
 export default function BillingForm({ setOpenPopup, initialDraft, onDraftSaved, quotationMode = false, onQuotationSaved, onTemplateSaved }: BillingFormProps) {
     const mounted = useRef(true);
@@ -30,7 +32,6 @@ export default function BillingForm({ setOpenPopup, initialDraft, onDraftSaved, 
         const product = products.find(record => record._id === item.product);
         return product ? { ...item, name: product.name, price: product.price } : item;
     }));
-    const [productId, setProductId] = useState('');
     const [operation, setOperation] = useState('');
     const busy = Boolean(operation);
     const [saveError, setSaveError] = useState('');
@@ -68,12 +69,14 @@ export default function BillingForm({ setOpenPopup, initialDraft, onDraftSaved, 
     const itemChange = (index: number, key: keyof InvoiceLineInput, value: string) => { setDirty(true); setItems(items.map((item, i) => i === index ? { ...item, [key]: value } : item)); };
     let totals: ReturnType<typeof calculateInvoice> | undefined, error: string | undefined;
     try { totals = calculateInvoice(items, values); } catch (caughtError) { const problem = asAppError(caughtError);  error = asAppError(problem).message; }
-    const addProduct = () => {
-        const product = products.find(record => record._id === productId);
-        if (!product) return;
+    const addProduct = (product: Product, quantity: number) => {
+        if (busy || !defaultsLoaded || items.length >= 100) return false;
         setDirty(true);
-        setItems([...items, { product: product._id, name: product.name, price: product.price, quantity: 1, discount: 0, gstRate: product.gstRate ?? '', hsn: product.hsn || '', unit: product.unit || 'NOS' }]);
-        setProductId('');
+        setItems(current => current.length >= 100 ? current : [...current, {
+            product: product._id, name: product.name, price: product.price, quantity, discount: 0,
+            gstRate: product.gstRate ?? '', hsn: product.hsn || '', unit: product.unit || 'NOS',
+        }]);
+        return true;
     };
     const submit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -133,15 +136,13 @@ export default function BillingForm({ setOpenPopup, initialDraft, onDraftSaved, 
             <section className={ui("composer-section")}><header><span className={ui("editor-step")}>01</span><div><h3>Customer &amp; schedule</h3><p>{quotationMode ? 'Who the offer is for, and how long it remains valid.' : 'Who you are billing, and when payment is due.'}</p></div></header>
             <TextField className={ui("draft-title-field")} id='invoice-draft-title' label={quotationMode ? 'Offer title' : 'Draft reference (internal only)'} size='small' variant='outlined' fullWidth value={draftTitle} inputProps={{ maxLength: 80 }} helperText={quotationMode ? 'A clear reference printed on this quotation.' : 'For example: Counter order · Patel Traders. Not printed on invoices.'} onChange={event => { setDirty(true); setDraftTitle(event.target.value); }} />
             <div className={ui("studio-grid")}>
-                {field('customer', 'Customer', { select: true, required: true, onChange: e => {
+                <CustomerPicker customers={customers} value={values.customer} disabled={busy || !defaultsLoaded} onSelect={customer => {
                     setDirty(true);
-                    const customerId = e.target.value;
-                    const customer = customers.find(c => c._id === customerId);
-                    setValues(current => ({ ...current, customer: customerId, billingAddress: customer?.address || '', customerGSTIN: customer?.gstin || '', placeOfSupply: customer?.state || '' }));
-                }, children: customers.map(c => <MenuItem key={c._id} value={c._id}>{c.name}</MenuItem>) })}
+                    setValues(current => ({...current,customer:customer._id,billingAddress:customer.address||'',customerGSTIN:customer.gstin||'',placeOfSupply:customer.state||''}));
+                }} />
                 {field('date', quotationMode ? 'Quotation date' : 'Invoice date', { type: 'date', required: true, InputLabelProps: { shrink: true } })}
                 {field('dueDate', quotationMode ? 'Valid until' : 'Due date', { type: 'date', required: true, InputLabelProps: { shrink: true }, inputProps: { min: values.date } })}
-                {field('billingAddress', 'Customer billing / delivery address', { required: true, multiline: true, inputProps: { maxLength: 500 } })}
+                {field('billingAddress', 'Customer billing / delivery address', { required: true, multiline: true, className: 'sm:col-span-2', inputProps: { maxLength: 500 } })}
             </div>
             <div className={ui("payment-term-shortcuts")} role='group' aria-label={quotationMode ? 'Quick validity periods' : 'Quick payment terms'}><span>{quotationMode ? 'Offer validity' : 'Payment terms'}</span>{[0, 7, 15, 30].map(days => <Button type='button' key={days} size='small' disabled={busy || !dueAfter(days)} aria-pressed={values.dueDate === dueAfter(days)} onClick={() => { setDirty(true); setValues(current => ({ ...current, dueDate: dueAfter(days) })); }}>{days ? quotationMode ? `${days} days` : `Net ${days}` : quotationMode ? 'Today only' : 'Due today'}</Button>)}</div>
             </section>
@@ -157,11 +158,9 @@ export default function BillingForm({ setOpenPopup, initialDraft, onDraftSaved, 
             {!values.gst && <p className={ui("studio-hint")}>GST is not being calculated for this {quotationMode ? 'quotation' : 'invoice'}.</p>}
             </section>
             <section className={ui("composer-section")}><header><span className={ui("editor-step")}>03</span><div><h3>Line items</h3><p>Use catalog defaults, then adjust quantities and discounts.</p></div></header>
-            <div className={ui("studio-product-picker")}><TextField id='invoice-product' select fullWidth variant='outlined' size='small' label='Product' value={productId} onChange={e => { setDirty(true); setProductId(e.target.value); }}>
-                {products.map(p => <MenuItem key={p._id} value={p._id}>{p.name} · {money(p.price)}</MenuItem>)}
-            </TextField><Button variant='outlined' color='primary' disabled={!productId || items.length >= 100} onClick={addProduct}>Add</Button></div>
+            <InvoiceItemPicker products={products} onAdd={addProduct} disabled={busy || !defaultsLoaded} limitReached={items.length >= 100} />
             {items.map((item, index) => <section className={ui("studio-item")} key={index}>
-                <div className={ui("studio-item-title")}><strong>{item.name}{!products.some(product => product._id === item.product) && ' · Unavailable'}</strong><span>{money(item.price)} / unit</span><Button size='small' color='secondary' onClick={() => { setDirty(true); setItems(items.filter((_, i) => i !== index)); }}>Remove</Button></div>
+                <div className={ui("studio-item-title")}><strong>{item.name}{!products.some(product => product._id === item.product) && ' · Unavailable'}</strong><span>{money(item.price)} / {item.unit || 'unit'}</span><Button size='small' color='secondary' onClick={() => { setDirty(true); setItems(items.filter((_, i) => i !== index)); }}>Remove</Button></div>
                 <div className={ui("studio-grid")}>
                     {([['quantity', 'Quantity', 1, 10000], ['discount', 'Discount %', 0, 100], ...(values.gst ? [['gstRate', 'GST %', 0, 40] as const] : [])] as const).map(([key, label, min, max]) =>
                         <TextField id={'item-' + index + '-' + key} key={key} label={label} type='number' size='small' variant='outlined' required value={item[key]} inputProps={{ min, max, step: key === 'quantity' ? 1 : 0.01 }} onChange={e => itemChange(index, key, e.target.value)} />)}

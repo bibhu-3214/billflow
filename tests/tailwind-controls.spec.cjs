@@ -1,0 +1,57 @@
+const {test,expect}=require('@playwright/test');
+const {randomUUID}=require('node:crypto');
+test.use({colorScheme:'light'});
+for(const [name,width,height] of [['desktop',1440,1000],['tablet',820,1180],['phone',390,844]]) {
+    test(name+': styled menus, calendar dates and nested keyboard focus',async({page})=>{
+        await page.setViewportSize({width,height});
+        const errors=[];page.on('pageerror',error=>errors.push(error.message));
+        await page.goto('/login');await page.getByLabel('Work email').fill('acceptance-controls-'+name+'@example.test');await page.getByLabel('Password',{exact:true}).fill('AcceptanceOnly#4827');
+        await page.getByRole('button',{name:'Open workspace',exact:true}).click();await page.getByRole('button',{name:'OK',exact:true}).click();await expect(page).toHaveURL(/\/admin$/);
+        const buyer='Controls buyer '+randomUUID().slice(0,8);
+        const customer=await page.evaluate(async buyer=>{
+            const config=await(await fetch('/api/v1/config')).json();
+            const response=await fetch('/api/v1/actions/addCustomer',{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':config.csrfToken,'Idempotency-Key':crypto.randomUUID()},body:JSON.stringify({args:[{name:buyer,email:'controls-'+crypto.randomUUID()+'@example.test',mobile:'9876543210',address:'Mumbai'}]})});
+            if(!response.ok)throw new Error('Fixture creation failed: '+response.status+' '+await response.text());return response.json();
+        },buyer);
+        await page.goto('/billing');await page.getByRole('button',{name:'Create invoice',exact:true}).click();
+        const studio=page.getByRole('dialog',{name:'Invoice studio'}),select=studio.getByRole('combobox',{name:'Customer',exact:true});
+        expect(await select.evaluate(e=>e.tagName)).toBe('BUTTON');await select.focus();await page.keyboard.press('ArrowDown');await expect(page.getByRole('listbox')).toBeVisible();
+        await page.keyboard.press('Escape');await expect(page.getByRole('listbox')).toHaveCount(0);await expect(studio).toBeVisible();await expect(select).toBeFocused();
+        await select.click();await page.getByRole('option',{name:new RegExp(buyer)}).focus();await page.keyboard.press('Enter');await expect(select).toHaveAttribute('data-value',customer._id);await expect(select).toBeFocused();
+        const invoice=studio.getByRole('textbox',{name:'Invoice date',exact:true}),due=studio.getByRole('textbox',{name:'Due date',exact:true});
+        await invoice.fill('2024-02-28');await due.fill('2024-02-29');
+        const calendarTrigger=studio.getByRole('button',{name:'Choose Due date',exact:true});await calendarTrigger.click();
+        const calendar=page.getByRole('dialog',{name:'Due date calendar'});await expect(calendar).toBeVisible();
+        await expect(calendar.getByRole('button',{name:/February 27.*2024/})).toBeDisabled();
+        await page.keyboard.press('Escape');await expect(calendar).not.toBeVisible();await expect(calendarTrigger).toBeFocused();await expect(studio).toBeVisible();await expect(page.getByRole('dialog',{name:'Discard unsaved changes?'})).toHaveCount(0);
+        await calendarTrigger.click();await page.screenshot({path:'output/controls-'+name+'-calendar-light.png',animations:'disabled'});
+        await calendar.getByRole('button',{name:/March 1.*2024/}).click();await expect(due).toHaveValue('2024-03-01');await expect(calendar).not.toBeVisible();
+        await due.fill('2024-02-30');await due.press('Tab');await expect(studio.getByRole('alert')).toContainText('real date');expect(await due.evaluate(e=>e.validity.valid)).toBe(false);
+        await due.fill('2024-02-27');await due.press('Tab');await expect(studio.getByRole('alert')).toContainText('2024-02-28 or later');
+        await page.keyboard.press('Escape');await page.getByRole('button',{name:'Discard changes',exact:true}).click();
+        await page.goto('/settings');
+        const legalName=page.getByRole('textbox',{name:'Business / legal name'});await expect(legalName).toBeVisible();
+        const metrics=await legalName.evaluate(e=>({padding:parseFloat(getComputedStyle(e).paddingLeft),height:e.getBoundingClientRect().height}));expect(metrics.padding).toBeGreaterThanOrEqual(12);expect(metrics.height).toBeGreaterThanOrEqual(40);
+        await page.getByRole('button',{name:'Switch to dark mode'}).click();
+        const state=page.getByRole('combobox',{name:'State / union territory'});await state.click();
+        const menu=page.getByRole('listbox');await expect(menu).toBeVisible();
+        const box=await menu.boundingBox();expect(box.x).toBeGreaterThanOrEqual(0);expect(box.x+box.width).toBeLessThanOrEqual(width);expect(box.y+box.height).toBeLessThanOrEqual(height);
+        expect(await menu.evaluate(e=>getComputedStyle(e).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
+        await page.screenshot({path:'output/controls-'+name+'-menu-dark.png',animations:'disabled'});
+        await page.getByRole('option',{name:/27 · Maharashtra/}).click();await expect(state).toHaveAttribute('data-value','27');
+        await state.click();await page.getByRole('option',{name:'Not set',exact:true}).click();await expect(state).toHaveAttribute('data-value','');
+        await expect(page.locator('#business-logo')).toHaveClass(/file:bg-primary-soft/);
+        await page.goto('/help');
+        const disclosure=page.locator('details').filter({has:page.getByText('How do I recover access?',{exact:true})});
+        const summary=disclosure.locator('summary'),chevron=summary.locator('[data-disclosure-chevron]');
+        await expect(summary).toHaveCSS('display','flex');await expect(summary).toHaveCSS('list-style-type','none');
+        await summary.focus();await expect(summary).toHaveCSS('outline-style','solid');await expect(summary).toHaveCSS('outline-width','2px');await page.keyboard.press('Space');await expect(disclosure).toHaveAttribute('open','');
+        await expect(chevron).toHaveCSS('rotate','180deg');await expect(summary).toBeFocused();
+        await page.screenshot({path:'output/disclosure-'+name+'-dark.png',fullPage:true,animations:'disabled'});
+        await page.keyboard.press('Enter');await expect(disclosure).not.toHaveAttribute('open','');
+        await page.getByRole('button',{name:'Switch to light mode'}).click();await summary.click();
+        await page.emulateMedia({reducedMotion:'reduce'});await expect(chevron).toHaveCSS('transition-duration','0s');
+        await page.screenshot({path:'output/disclosure-'+name+'-light.png',fullPage:true,animations:'disabled'});
+        expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);expect(errors).toEqual([]);
+    });
+}

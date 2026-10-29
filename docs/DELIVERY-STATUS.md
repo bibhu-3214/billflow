@@ -1,14 +1,14 @@
 # Delivery status
 
-28 October 2026. Development implementation on top of GitHub master d72cd1c. This is a local candidate, not a public launch.
+29 October 2026. Development implementation on `feat/production-platform`. This is a local candidate, not a public launch.
 
 | Area | Implemented | Remaining acceptance |
 | --- | --- | --- |
-| Web experience | Retained responsive billing UI; connected identity, recovery, Help, explicit backup/import, account controls and accessible form labels | Wider browser/accessibility and business-pilot acceptance |
-| Web tooling | Vite 7 and Jest 30 replace CRA/CRACO; JSX files use .jsx; obsolete compatibility patches removed | UI library maintenance and performance tuning |
+| Web experience | Responsive workspace navigation, financial overview/action center, interactive trends, customer lookup, focused invoice/draft/offer views; connected identity, recovery, backup/import and account controls | Wider browser/accessibility and business-pilot acceptance |
+| Web tooling | Vite 7, Jest 30, strict TypeScript/no-any enforcement, Tailwind CSS 4, Radix dialogs, lazy page loading and contained page-error recovery | Wider performance/load acceptance and browser coverage |
 | Accounts | Django/allauth, mandatory verification, password recovery, cookie/CSRF browser sessions, app sessions, scoped export/deletion and conditional web Google/Apple configuration | Real OAuth credentials, delivery, linking and mailbox tests |
 | Billing | PostgreSQL business locks, server validation, invoice/source uniqueness, request receipts, immutable snapshots and exact paise | Professional tax review, load acceptance and broader accounting scope |
-| Operations | Drafts, quotations/conversion, templates, manual stock and customer follow-up history | Team roles, purchasing/expenses, valuation and fractional stock are outside this release |
+| Operations | Searchable name/SKU/category item entry with quantity and keyboard-scanner support; drafts, quotations/conversion, templates, manual stock and customer follow-up history | Team roles, purchasing/expenses, valuation and fractional stock are outside this release |
 | Recovery | Device-side encrypted export/decryption; preview/digest/revision-confirmed empty-business import; actual database restore rehearsal | Managed-host restore, retention policy and hosted rollback |
 | Documents | MIT jsPDF/AutoTable and embedded Noto Sans replace Kendo; long invoice/credit/statement cases verified | Supported-script limits and business-specific document acceptance |
 | Android/iPhone | Expo candidate with secure sessions and core connected workflows; both JavaScript exports pass | Native social auth/app links, full native-only parity, signed binaries and physical-device acceptance |

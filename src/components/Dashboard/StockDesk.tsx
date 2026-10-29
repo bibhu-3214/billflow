@@ -1,3 +1,4 @@
+import Disclosure from '../ui/Disclosure';
 import { ui } from '../../styles/ui';
 import { Button, TextField, MenuItem } from '../ui/primitives';
 import type { FormEvent } from 'react';
@@ -39,7 +40,7 @@ export function StockEditor({ product, record, onClose, onSaved }: { product: Pr
             <TextField id='stock-reorder' label='Low-stock threshold' type='number' variant='outlined' required value={reorderLevel} inputProps={{ min: 0, max: 1000000, step: 1 }} onChange={event => setReorderLevel(event.target.value)} />
             <TextField className={ui("editor-wide")} id='stock-reason' label='Count / adjustment reason' variant='outlined' required multiline rows={2} value={reason} inputProps={{ maxLength: 500 }} onChange={event => setReason(event.target.value)} />
         </div></fieldset><p className={ui("studio-hint")}>Invoices, quotations and credits do not change this stock. No automatic unit conversion or stock valuation is performed. Count dates are recorded at save time.</p>
-        {!!record?.movements.length && <details className={ui("operations-history")}><summary>Movement history ({record.movements.length})</summary>{record.movements.slice().reverse().map((movement, index) => <article key={index}><strong>{movement.type} · {movement.delta > 0 ? '+' : ''}{movement.delta} · Balance {movement.balance}</strong><small>{new Date(movement.at).toLocaleString('en-IN')} · Threshold {movement.reorderLevel ?? 'Not recorded'}</small><p>{movement.reason}</p></article>)}</details>}
+        {!!record?.movements.length && <Disclosure className={ui("operations-history")} summary={<> Movement history ({record.movements.length}) </>}>{record.movements.slice().reverse().map((movement, index) => <article key={index}><strong>{movement.type} · {movement.delta > 0 ? '+' : ''}{movement.delta} · Balance {movement.balance}</strong><small>{new Date(movement.at).toLocaleString('en-IN')} · Threshold {movement.reorderLevel ?? 'Not recorded'}</small><p>{movement.reason}</p></article>)}</Disclosure>}
         <footer className={ui("editor-footer")}><Button disabled={busy} onClick={() => close ? close() : onClose()}>Cancel</Button><Button color='primary' variant='contained' type='submit' disabled={busy}>{busy ? 'Recording…' : 'Record stock movement'}</Button></footer>
     </form>;
 }

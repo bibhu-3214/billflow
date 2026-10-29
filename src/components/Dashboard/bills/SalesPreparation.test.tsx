@@ -66,7 +66,7 @@ test('conversion errors retain dates and converted offers cannot be converted ag
     const close = jest.fn(); const { rerender } = render(<QuotationReview quote={{ ...quote, status: 'accepted' }} onChanged={jest.fn()} onClose={close} />);
     fireEvent.click(screen.getByRole('button', { name: 'Issue linked invoice' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Storage full');
-    expect(screen.getByLabelText(/Payment due date/)).toHaveValue(today()); expect(close).not.toHaveBeenCalled();
+    expect(screen.getByRole('textbox', {name: /Payment due date/})).toHaveValue(today()); expect(close).not.toHaveBeenCalled();
     rerender(<QuotationReview quote={{ ...quote, status: 'converted' }} onChanged={jest.fn()} onClose={close} />);
     expect(screen.queryByRole('button', { name: 'Issue linked invoice' })).not.toBeInTheDocument();
 });

@@ -2,7 +2,7 @@
 
 **Your business, in focus.** Customers, catalog, invoices and collections in one considered workspace.
 
-BillFlow has a strict TypeScript/React frontend and is being upgraded into a customer product using the same development-first approach as Perqelle: a responsive web app, Django/PostgreSQL backend and an Android/iPhone candidate.
+BillFlow has a responsive workspace with desktop navigation, a financial overview, interactive invoice trends, customer lookup and focused sales views. It has a strict TypeScript/React frontend and is being upgraded into a customer product using the same development-first approach as Perqelle: a responsive web app, Django/PostgreSQL backend and an Android/iPhone candidate.
 
 **Status: local development; not publicly released.** Hosting, domains, live email, support mailboxes and store accounts have not been activated. See [Delivery status](docs/DELIVERY-STATUS.md) for evidence and outstanding work.
 
@@ -10,12 +10,14 @@ BillFlow has a strict TypeScript/React frontend and is being upgraded into a cus
 
 | Workflow | Behavior |
 | --- | --- |
-| Prepare sales | Incomplete drafts, reusable item templates and quotations with manual acceptance |
+| Prepare sales | Search items by name/SKU/category, enter quantities, save drafts/templates and prepare quotations |
 | Issue invoices | Domestic GST, financial-year numbers, discounts and immutable party/price snapshots |
 | Track collections | Partial/full payment records, receivables, statements, reversals, cancellation and full credit |
 | Run the day | Customer/catalog search, manual whole-unit stock counts, customer follow-ups and outcome history |
 | Recover records | Encrypted snapshots and an explicit transfer into an empty connected business |
 | Control access | Verified accounts, email recovery, scoped server authorization and confirmed account deletion |
+
+Invoice and quotation editors support keyboard item entry: search a name, SKU or category, choose a quantity and press Enter for a unique match. Keyboard-style scanners can enter a saved SKU; duplicate codes require an explicit product choice. See [retail upgrades](docs/PRODUCT-UPGRADES.md).
 
 Payments are manual records. BillFlow does not connect to banks, move money, automatically contact customers or file taxes. Invoices do not reserve or deduct stock. Team roles, purchasing/expenses, fractional units, valuation, e-invoice registration and e-way bills are outside this release. Tax applicability and classification require professional review.
 

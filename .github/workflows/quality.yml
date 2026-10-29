@@ -47,6 +47,7 @@ jobs:
       HOST: 127.0.0.1
       PORT: 3000
       BROWSER: none
+      BILLFLOW_TEST_BUILT_ORIGIN: http://127.0.0.1:3006
       CI: true
     steps:
       - uses: actions/checkout@v6
@@ -63,6 +64,7 @@ jobs:
         working-directory: api
       - run: npm install --global yarn@1.22.22
       - run: yarn install --frozen-lockfile --non-interactive
+      - run: yarn build:connected
       - run: yarn pdf:samples
       - run: python scripts/verify-pdfs.py output/pdf
       - run: yarn playwright install --with-deps chromium
@@ -71,6 +73,7 @@ jobs:
           mkdir -p output
           (cd api && python -m scripts.serve_acceptance > ../output/api.log 2>&1) &
           yarn start > output/web.log 2>&1 &
+          yarn vite preview --host 127.0.0.1 --port 3006 --strictPort > output/preview.log 2>&1 &
           python scripts/wait_for_acceptance.py
       - run: yarn test:browser
       - uses: actions/upload-artifact@v6

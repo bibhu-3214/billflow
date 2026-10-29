@@ -1,118 +1,45 @@
-import { ui, stagger } from '../../../styles/ui';
-import { Users as PeopleAltRoundedIcon, Package as LocalMallRoundedIcon, ReceiptText as ReceiptRoundedIcon, TrendingUp as TrendingUpRoundedIcon, Building2 as BusinessRoundedIcon, Mail as MailOutlineRoundedIcon, MapPin as RoomOutlinedIcon, ArrowUpRight as ArrowUpwardRoundedIcon } from 'lucide-react';
-import { Button } from '../../ui/primitives';
-import { useAppSelector as useSelector } from '../../../Redux/hooks';
+import Disclosure from '../../ui/Disclosure';
 import React from 'react';
-
+import {Link} from 'react-router-dom';
+import {ArrowUpRight, ArrowRight, Plus, ReceiptText, Wallet, Clock3, CircleCheck, Circle, Building2, Users, Package, FileSpreadsheet} from 'lucide-react';
+import {useAppSelector} from '../../../Redux/hooks';
+import {money} from '../../../utils/indiaBilling';
+import {workspaceOverview} from '../../../utils/overview';
 import BarChart from './BarChart';
-
-import { Link } from 'react-router-dom';
-import { receivableRows } from '../../../utils/receivables';
-import { money } from '../../../utils/indiaBilling';
 import StockDesk from '../StockDesk';
 import FollowUpDesk from '../FollowUpDesk';
+import {ui} from '../../../styles/ui';
 
 export default function Admin() {
-    const customers = useSelector(state => state.customers);
-    const products = useSelector(state => state.products);
-    const { bills } = useSelector(state => state.bills);
-    const { userDetails } = useSelector(state => state.users);
-    const revenue = bills.filter(bill => !bill.cancellation && !bill.creditNote).reduce((sum, bill) => sum + Number(bill.total || 0), 0);
-    const activeCount = bills.filter(bill => !bill.cancellation && !bill.creditNote).length;
-    const averageInvoice = activeCount ? Math.round(revenue / activeCount) : 0;
-    const openInvoices = receivableRows(bills, customers).filter(row => row.balance > 0);
-    const overdueInvoices = openInvoices.filter(row => row.overdueDays > 0);
-    const today = new Intl.DateTimeFormat('en-IN', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-    }).format(new Date());
-
-    const metrics = [
-        {
-            label: 'Customers',
-            value: customers.length,
-            detail: customers.length ? 'Profiles in your workspace' : 'Add your first customer',
-            icon: <PeopleAltRoundedIcon />,
-            tone: 'violet',
-        },
-        {
-            label: 'Products',
-            value: products.length,
-            detail: products.length ? 'Ready to add to invoices' : 'Build your catalog',
-            icon: <LocalMallRoundedIcon />,
-            tone: 'teal',
-        },
-        {
-            label: 'Invoices',
-            value: bills.length,
-            detail: bills.length ? `₹${averageInvoice.toLocaleString('en-IN')} average value` : 'No invoices generated yet',
-            icon: <ReceiptRoundedIcon />,
-            tone: 'amber',
-        },
-        {
-            label: 'Total invoiced',
-            value: `₹${revenue.toLocaleString('en-IN')}`,
-            detail: 'Invoice value including tax',
-            icon: <TrendingUpRoundedIcon />,
-            tone: 'blue',
-        },
+    const customers=useAppSelector(state=>state.customers), products=useAppSelector(state=>state.products);
+    const bills=useAppSelector(state=>state.bills.bills), profile=useAppSelector(state=>state.users.userDetails);
+    const data=workspaceOverview(bills,customers);
+    const mode=profile.isDemo?'Sample workspace':profile.isCloud?'Connected workspace':'Local workspace';
+    const steps=[
+        {label:'Business details', detail:'Business name and billing address', ready:Boolean(profile.businessName&&profile.address), to:'/settings', icon:Building2},
+        {label:'Customer profiles', detail:`${customers.length} saved ${customers.length===1?'customer':'customers'}`,ready:customers.length>0,to:'/customer',icon:Users},
+        {label:'Product catalog', detail:`${products.length} ${products.length===1?'item':'items'} available for billing`,ready:products.length>0,to:'/product',icon:Package},
+        {label:'First issued invoice', detail:data.activeCount?`${data.activeCount} active issued invoices`:'Prepare and review your first sale',ready:data.activeCount>0,to:'/billing',icon:ReceiptText},
     ];
-
-    return (
-        <section className={ui("dashboard-page page-enter")}>
-            <header className={ui("overview-hero")}>
-                <div className={ui("overview-orb overview-orb-one")} />
-                <div className={ui("overview-orb overview-orb-two")} />
-                <div className={ui("overview-copy")}>
-                    <span className={ui("overview-date")}>{today}</span>
-                    <h1>Good to see you, {userDetails.username || 'there'}.</h1>
-                    <p>{overdueInvoices.length ? `${overdueInvoices.length} overdue invoices need your attention.` : 'A clear view of your billing, balances and next steps.'}</p>
-                </div>
-                <div className={ui("overview-revenue")}>
-                    <span>Total invoiced · including tax</span>
-                    <strong>₹{revenue.toLocaleString('en-IN')}</strong>
-                    <div><ArrowUpwardRoundedIcon /> Across {bills.length} invoice{bills.length === 1 ? '' : 's'}</div>
-                </div>
-            </header>
-            <div className={ui("section-heading")}>
-                <div><span>At a glance</span><h2>Workspace performance</h2></div>
-                <div className={ui("live-chip")}><span /> Stored on this browser</div>
-            </div>
-            <div className={ui("metric-grid")}>
-                {metrics.map((metric, index) => (
-                    <article className={ui("metric-card surface-card", stagger[index])} key={metric.label}>
-                        <div className={ui("metric-card-top")}>
-                            <div className={ui(`metric-icon ${metric.tone}`)}>{metric.icon}</div>
-                        </div>
-                        <span>{metric.label}</span>
-                        <strong>{metric.value}</strong>
-                        <small>{metric.detail}</small>
-                    </article>
-                ))}
-            </div>
-            <div className={ui("collection-callout")}><div><span className={ui("workspace-kicker")}>YOUR NEXT ACTION</span><h2>{money(overdueInvoices.reduce((sum, row) => sum + row.balance, 0))} awaiting follow-up</h2><p>{overdueInvoices.length} overdue invoices · {openInvoices.length} open invoices overall</p></div><Button asChild  variant='contained' color='primary'><Link to='/receivables'>Review collections</Link></Button></div>
-            <div className={ui("overview-operations-grid")}><StockDesk compact /><FollowUpDesk compact /></div>
-            <div className={ui("dashboard-grid")}>
-                <article className={ui("chart-card surface-card")}>
-                    <div className={ui("card-heading")}>
-                        <div><span>Performance</span><h2>Invoice value trend</h2></div>
-                        <span className={ui("period-chip")}>Last 6 months</span>
-                    </div>
-                    <BarChart />
-                </article>
-                <article className={ui("profile-card surface-card")}>
-                    <div className={ui("card-heading")}><div><span>Account</span><h2>Business profile</h2></div></div>
-                    <div className={ui("profile-avatar")}>{(userDetails.businessName || 'B').charAt(0).toUpperCase()}</div>
-                    <h3>{userDetails.businessName || 'Your business'}</h3>
-                    <p className={ui("profile-owner")}>{userDetails.username || 'Business owner'}</p>
-                    <div className={ui("profile-details")}>
-                        <div><MailOutlineRoundedIcon /><span>{userDetails.email || 'Email unavailable'}</span></div>
-                        <div><BusinessRoundedIcon /><span>{userDetails.businessName || 'Business name unavailable'}</span></div>
-                        <div><RoomOutlinedIcon /><span>{userDetails.address || 'Address unavailable'}</span></div>
-                    </div>
-                </article>
-            </div>
-        </section>
-    );
+    const done=steps.filter(step=>step.ready).length;
+    const metrics=[
+        {label:'Total invoiced',value:data.invoiced,detail:`${data.activeCount} active invoices · including tax`,icon:ReceiptText,tone:'text-primary bg-primary-soft'},
+        {label:'Payments recorded',value:data.paid,detail:'Manual receipts, net of reversals',icon:Wallet,tone:'text-success bg-success/10'},
+        {label:'Outstanding balance',value:data.outstanding,detail:`${data.openCount} open invoices`,icon:FileSpreadsheet,tone:'text-primary bg-primary-soft'},
+        {label:'Overdue balance',value:data.overdue,detail:`${data.overdueRows.length} invoices awaiting follow-up`,icon:Clock3,tone:'text-danger bg-danger/10'},
+    ];
+    return <section className='mx-auto max-w-[1200px] px-4 py-7 sm:px-7 sm:py-9' aria-label='Business overview'>
+        <header className='mb-7 flex flex-wrap items-end justify-between gap-5'><div><p className='text-[10px] font-semibold tracking-[.18em] text-muted uppercase'>Workspace / Overview</p><h1 className='mt-2 text-[clamp(1.7rem,3vw,2.3rem)] font-semibold leading-tight text-ink'>Your business, at a glance.</h1><p className='mt-2 text-sm text-muted'>Welcome back{profile.username?`, ${profile.username}`:''}. Here’s what needs your attention.</p></div><Link to='/billing?compose=invoice' className='inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90 dark:text-[#181a31]'><Plus size={17} aria-hidden='true' />Create invoice</Link></header>
+        <div className='mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-surface px-4 py-3 text-xs text-muted'><span className='flex min-w-0 items-center gap-2'><Building2 size={15} aria-hidden='true' /><strong className='truncate font-semibold text-ink'>{profile.businessName||'Your business'}</strong><span className='rounded-md bg-primary-soft px-2 py-1 text-[10px] font-medium text-primary'>{mode}</span></span><time dateTime={new Date().toISOString().slice(0,10)}>{new Intl.DateTimeFormat('en-IN',{day:'numeric',month:'long',year:'numeric'}).format(new Date())}</time></div>
+        <div className='grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4'>{metrics.map(metric=><article key={metric.label} className='min-w-0 rounded-2xl border border-line bg-surface p-4 sm:p-5 shadow-[0_4px_18px_#17203303]'><div className='flex items-center justify-between gap-3'><span className='text-xs font-medium text-muted'>{metric.label}</span><span className={`grid size-8 shrink-0 sm:size-9 place-items-center rounded-xl ${metric.tone}`}><metric.icon size={17} aria-hidden='true' /></span></div><strong className='mt-4 block break-words text-[clamp(1.05rem,2.1vw,1.85rem)] font-semibold tracking-tight text-ink'>{money(metric.value)}</strong><p className='mt-2 text-[11px] leading-relaxed text-muted'>{metric.detail}</p></article>)}</div>
+        <div className='mt-6 grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1.7fr)_minmax(280px,1fr)]'>
+            <article className='min-w-0 rounded-2xl border border-line bg-surface p-5 sm:p-6'><BarChart /></article>
+            <article className='min-w-0 rounded-2xl border border-line bg-surface p-5 sm:p-6'><div className='flex items-center justify-between gap-3'><div><p className='text-[10px] font-semibold tracking-[.15em] text-muted uppercase'>Action center</p><h2 className='mt-1 text-lg font-semibold text-ink'>Keep things moving</h2></div><span className='rounded-lg bg-primary-soft px-2.5 py-1.5 text-xs font-semibold text-primary'>{done} / 4</span></div><p className='mt-2 text-xs leading-relaxed text-muted'>{done===4?'Your core billing setup is in place. Keep your details up to date.':'Complete these essentials for a smoother billing day.'}</p><div className='mt-4 divide-y divide-line'>{steps.map(step=><Link key={step.label} to={step.to} className='group flex items-center gap-3 py-3.5 text-ink'><step.icon size={17} className='shrink-0 text-muted' aria-hidden='true' /><span className='min-w-0 flex-1'><strong className='block text-xs font-semibold group-hover:text-primary'>{step.label}</strong><span className='mt-1 block text-[11px] text-muted'>{step.detail}</span></span>{step.ready?<CircleCheck size={17} className='text-success' aria-label='Complete' />:<Circle size={17} className='text-muted' aria-label='To do' />}</Link>)}</div></article>
+        </div>
+        <div className='mt-6 grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1.7fr)_minmax(280px,1fr)]'>
+            <article className='min-w-0 overflow-hidden rounded-2xl border border-line bg-surface'><header className='flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-5 sm:px-6'><div><p className='text-[10px] font-semibold tracking-[.15em] text-muted uppercase'>Sales activity</p><h2 className='mt-1 text-lg font-semibold text-ink'>Recent invoices</h2></div><Link to='/billing' className='inline-flex items-center gap-1 text-xs font-semibold text-primary'>View all<ArrowUpRight size={14} aria-hidden='true' /></Link></header>{data.recent.length?<div className='divide-y divide-line'>{data.recent.map(row=><Link key={row._id} to={'/billdetails/'+row._id} className='group flex flex-wrap items-center gap-3 px-5 py-4 transition-colors hover:bg-primary-soft/35 sm:px-6'><span className='grid size-8 shrink-0 sm:size-9 place-items-center rounded-xl bg-primary-soft text-primary'><ReceiptText size={16} aria-hidden='true' /></span><span className='min-w-0 flex-1 basis-32'><strong className='block truncate text-xs font-semibold text-ink'>{row.customerName}</strong><span className='mt-1 block text-[11px] text-muted'>{row.invoiceNumber||'Legacy invoice'} · {row.date.slice(0,10)}</span></span><span className='text-right'><strong className='block text-xs font-semibold text-ink'>{money(row.total)}</strong><span className='mt-1 inline-block text-[10px] font-medium text-muted'>{row.status}</span></span><ArrowUpRight size={15} className='text-muted group-hover:text-primary' aria-hidden='true' /></Link>)}</div>:<div className='px-6 py-10 text-center'><ReceiptText size={28} className='mx-auto mb-3 text-muted' aria-hidden='true' /><h3 className='text-sm font-semibold text-ink'>Your first sale starts here.</h3><p className='mt-2 text-xs leading-relaxed text-muted'>Add a customer and an item, then prepare an invoice.</p><Link to='/billing?compose=invoice' className='mt-4 inline-block text-xs font-semibold text-primary'>Prepare an invoice →</Link></div>}</article>
+            <article className='min-w-0 rounded-2xl border border-line bg-surface p-5 sm:p-6'><p className='text-[10px] font-semibold tracking-[.15em] text-muted uppercase'>Collections</p><h2 className='mt-1 text-lg font-semibold text-ink'>Due for attention</h2><strong className='mt-4 block break-words text-2xl font-semibold tracking-tight text-ink'>{money(data.overdue)}</strong><p className='mt-1 text-xs text-muted'>Overdue balance across your workspace</p><div className='mt-4 divide-y divide-line'>{data.overdueRows.slice(0,3).map(row=><Link key={row._id} to={'/billdetails/'+row._id} className='flex items-start justify-between gap-3 py-3 text-xs'><span className='min-w-0'><strong className='block truncate font-medium text-ink'>{row.customerName}</strong><span className='mt-1 block text-[11px] text-danger'>{row.overdueDays} days overdue</span></span><strong className='shrink-0 font-semibold text-ink'>{money(row.balance)}</strong></Link>)}</div>{!data.overdueRows.length&&<p className='my-6 rounded-xl bg-success/8 p-3 text-xs leading-relaxed text-success'>No overdue invoices in your records. {data.openCount?`${data.openCount} invoices still have an open balance.`:'No open balances recorded.'}</p>}<Link to='/receivables' className='mt-4 inline-flex items-center gap-2 text-xs font-semibold text-primary'>Review collections<ArrowRight size={14} aria-hidden='true' /></Link></article>
+        </div>
+        <Disclosure className='group/operations mt-7 rounded-2xl border border-line bg-surface p-5' summaryClassName='flex cursor-pointer items-center justify-between gap-3 rounded-lg' summary={<> <span><span className='block text-[10px] font-semibold tracking-[.15em] text-muted uppercase'>Daily operations</span><span className='mt-1 block text-sm font-semibold text-ink'>Stock & customer follow-ups</span></span> </>}><div className={ui('overview-operations-grid')}><StockDesk compact /><FollowUpDesk compact /></div></Disclosure>
+    </section>;
 }

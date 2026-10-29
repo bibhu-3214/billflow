@@ -69,8 +69,10 @@ for (const [name, width, height] of [['desktop', 1440, 1000], ['tablet', 820, 11
         await page.reload();
         await page.getByRole('button', {name: 'Create quotation', exact: true}).click();
         await quoteStudio.getByLabel('Offer title', {exact:true}).fill(title);
-        await quoteStudio.locator('#invoice-customer').selectOption(fixture.customer._id);
-        await quoteStudio.locator('#invoice-product').selectOption(fixture.product._id);
+        await quoteStudio.locator('#invoice-customer').click();
+        await page.getByRole('option',{name:new RegExp(fixture.customer.name)}).click();
+        await quoteStudio.locator('#invoice-product').click();
+        await page.getByRole('option',{name:new RegExp(fixture.product.name)}).click();
         await quoteStudio.getByRole('button',{name:'Add',exact:true}).click();
         await quoteStudio.screenshot({path:'output/tailwind-'+name+'-composer-dark.png',animations:'disabled'});
         await quoteStudio.getByRole('button',{name:'Save quotation',exact:true}).click();

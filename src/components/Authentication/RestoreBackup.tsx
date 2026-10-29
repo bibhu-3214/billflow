@@ -1,3 +1,5 @@
+import Disclosure from '../ui/Disclosure';
+import {fileInputClass} from '../ui/fileStyles';
 import { ui } from '../../styles/ui';
 import { Button, TextField } from '../ui/primitives';
 import type { BackupPreview } from '../../types/domain';
@@ -31,11 +33,11 @@ export default function RestoreBackup() {
         } catch (caughtError) { const error = asAppError(caughtError);  setMessage(error.message); }
         finally { setBusy(false); }
     };
-    return <details className={ui("backup-panel")}><summary>Recover from an encrypted backup</summary>
+    return <Disclosure className={ui("backup-panel")} summary={<> Recover from an encrypted backup </>}>
         <p>Nothing is uploaded. Use the account password from when you exported the backup. Existing accounts will never be replaced or merged.</p>
         <form onSubmit={submit}><fieldset disabled={busy} className={ui("studio-fields")}>
             <label htmlFor='restore-file'>BillFlow backup file (JSON, up to 20 MB)</label>
-            <input id='restore-file' type='file' accept='.json,application/json' onChange={e => { resetPreview(); setFile(e.target.files?.[0] || null); }} />
+            <input id='restore-file' type='file' className={fileInputClass} accept='.json,application/json' onChange={e => { resetPreview(); setFile(e.target.files?.[0] || null); }} />
             <TextField id='restore-password' label='Backup account password' type='password' required autoComplete='off' fullWidth value={password} onChange={e => { resetPreview(); setPassword(e.target.value); }} />
             {preview && <div className={ui("backup-preview")}><strong>{preview.businessName}</strong><p>{preview.email}</p><p>Backup created: {preview.createdAt}</p>
                 <p>{preview.customers} customers · {preview.products} products · {preview.invoices} invoices · {preview.drafts || 0} drafts · {preview.quotations || 0} quotations · {preview.templates || 0} templates · {preview.trackedProducts || 0} tracked stock records · {preview.followUps || 0} follow-ups</p>
@@ -44,5 +46,5 @@ export default function RestoreBackup() {
             </div>}
             <Button type='submit' variant='outlined' color='primary' disabled={busy || !file || Boolean(preview && confirmation !== 'RESTORE')}>{busy ? 'Checking…' : preview ? 'Restore as a recovered account' : 'Verify backup'}</Button>
         </fieldset></form><p role='status'>{message}</p>
-    </details>;
+    </Disclosure>;
 }

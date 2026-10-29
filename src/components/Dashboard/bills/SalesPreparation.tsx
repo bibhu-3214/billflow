@@ -58,7 +58,7 @@ export function QuotationReview({ quote, onChanged, onClose }: { quote: Quotatio
     </div>;
 }
 
-export default function SalesPreparation({ refreshKey, onCreateQuotation, onResumeDraft, onChanged }: { refreshKey?: number; onCreateQuotation: () => void; onResumeDraft: (draft: Draft) => void; onChanged: () => void }) {
+export default function SalesPreparation({ refreshKey, onCreateQuotation, onResumeDraft, onChanged, hideCreateAction = false }: { hideCreateAction?: boolean; refreshKey?: number; onCreateQuotation: () => void; onResumeDraft: (draft: Draft) => void; onChanged: () => void }) {
     const [tab, setTab] = useState('quotations');
     type SalesRecord = InvoiceTemplate & Partial<Quotation>;
     const [records, setRecords] = useState<SalesRecord[]>([]);
@@ -93,7 +93,7 @@ export default function SalesPreparation({ refreshKey, onCreateQuotation, onResu
     const filtered = records.filter(record => `${record.title} ${record.number || ''} ${record.customerSnapshot?.name || ''}`.toLowerCase().includes(query.trim().toLowerCase()));
     const currentPage = Math.min(page, Math.max(0, Math.ceil(filtered.length / 6) - 1));
     return <section className={ui("finance-panel sales-preparation")} aria-label='Sales preparation'>
-        <header className={ui("draft-desk-heading")}><div><span className={ui("workspace-kicker")}>FROM OFFER TO ORDER</span><h2>Sales preparation</h2><p>Clear offers. Repeatable orders. One connected workflow.</p></div><Button variant='outlined' color='primary' disabled={busy} onClick={onCreateQuotation}>Create quotation</Button></header>
+        <header className={ui("draft-desk-heading")}><div><span className={ui("workspace-kicker")}>FROM OFFER TO ORDER</span><h2>Sales preparation</h2><p>Clear offers. Repeatable orders. One connected workflow.</p></div>{!hideCreateAction && <Button variant='outlined' color='primary' disabled={busy} onClick={onCreateQuotation}>Create quotation</Button>}</header>
         <div className={ui("invoice-tabs")} role='group' aria-label='Preparation views'>{[['quotations', 'Quotations'], ['templates', 'Item templates']].map(([value, label]) => <button key={value} aria-pressed={tab === value} disabled={busy} className={ui(tab === value ? 'selected' : '')} onClick={() => { setRecords([]); setLoading(true); setTab(value); setQuery(''); setPage(0); if (tab === value) setReload(current => current + 1); }}>{label}</button>)}</div>
         <TextField id='preparation-search' label={tab === 'quotations' ? 'Find an offer or customer' : 'Find an item template'} variant='outlined' size='small' value={query} onChange={event => { setQuery(event.target.value); setPage(0); }} />
         {loading && <p role='status'>Opening {tab}…</p>}{error && <p role='alert' className={ui("editor-error")}>{error} <Button disabled={busy} onClick={() => setReload(value => value + 1)}>Reload</Button></p>}

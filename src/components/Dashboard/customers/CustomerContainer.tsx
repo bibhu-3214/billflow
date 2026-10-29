@@ -21,7 +21,8 @@ export default function CustomerContainer() {
     const [searchResult, setSearchResult] = useState<ReturnType<typeof customerAccounts>[number][]>([]);
     const customers = useSelector((state) => state.customers);
     const { bills } = useSelector(state => state.bills);
-    const billedCustomers = new Set(bills.map(bill => bill.customer)).size;
+    const billedCustomerIds = new Set(bills.map(bill => bill.customer));
+    const billedCustomers = customers.filter(customer => billedCustomerIds.has(customer._id)).length;
 
     useEffect(() => {
         const query = searchInput.trim().toLowerCase();
@@ -40,7 +41,7 @@ export default function CustomerContainer() {
                 <div className={ui("workspace-hero-stats")}>
                     <div><span>Total customers</span><strong>{customers.length}</strong></div>
                     <div><span>With invoices</span><strong>{billedCustomers}</strong></div>
-                    <div><span>New opportunity</span><strong>{Math.max(customers.length - billedCustomers, 0)}</strong></div>
+                    <div><span>Without invoices</span><strong>{Math.max(customers.length - billedCustomers, 0)}</strong></div>
                 </div>
             </header>
             <FollowUpDesk />

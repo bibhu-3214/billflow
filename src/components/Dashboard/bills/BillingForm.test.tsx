@@ -1,3 +1,4 @@
+import {chooseOption} from '../../../testing/chooseOption';
 import { createRootState, draftFixture, quotationFixture, templateFixture, settingsFixture } from '../../../testing/fixtures';
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
@@ -67,12 +68,12 @@ test('editor calculates a discounted preview and retains input when issuing does
     expect(screen.getByRole('complementary', { name: 'Invoice review' })).toBeInTheDocument();
     expect(screen.getByText('Your invoice starts with an item.')).toBeInTheDocument();
     await waitFor(() => expect(screen.queryByText('Loading business defaults…')).not.toBeInTheDocument());
-    fireEvent.change(screen.getByRole('combobox', {name: 'Customer'}), {target: {value: 'c'}});
+    chooseOption('Customer',/^Buyer/);
     expect(screen.getByLabelText(/Customer billing/)).toHaveValue('Saved billing address');
     fireEvent.change(screen.getByLabelText(/Customer billing/), { target: { value: 'Mumbai' } });
-    fireEvent.change(screen.getByRole('combobox', {name: 'Product'}), {target: {value: 'p'}});
+    chooseOption('Product',/^Consulting/);
     fireEvent.click(screen.getByRole('button', { name: 'Add' }));
-    fireEvent.change(screen.getByLabelText(/Quantity/), { target: { value: '2' } });
+    fireEvent.change(screen.getByRole('spinbutton', {name: 'Quantity', exact: true}), { target: { value: '2' } });
     fireEvent.change(screen.getByLabelText(/Discount %/), { target: { value: '10' } });
     expect(screen.getAllByText('₹180.00')).toHaveLength(2);
     fireEvent.click(screen.getByRole('button', { name: 'Issue invoice' }));
@@ -111,7 +112,7 @@ test('resumes draft terms, uses current catalog prices with a warning and carrie
     expect(screen.getByText(/Catalog prices changed/)).toBeInTheDocument();
     expect(screen.getByLabelText('Notes / payment terms')).toHaveValue('Saved terms');
     fireEvent.click(screen.getByRole('button', { name: 'Net 15' }));
-    expect(screen.getByLabelText(/Due date/)).toHaveValue('2026-10-24');
+    expect(screen.getByRole('textbox', {name: /Due date/})).toHaveValue('2026-10-24');
     expect(screen.getAllByText('₹400.00')).toHaveLength(3);
     fireEvent.click(screen.getByRole('button', { name: 'Issue invoice' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Draft changed elsewhere');
@@ -125,7 +126,7 @@ test('select-only invoice edits require confirmation before closing', async () =
     const close = jest.fn();
     render(<Popup title='Invoice studio' size='invoice' openPopup setOpenPopup={close}><BillingForm setOpenPopup={close} /></Popup>);
     await waitFor(() => expect(screen.queryByText('Loading business defaults…')).not.toBeInTheDocument());
-    fireEvent.change(screen.getByRole('combobox', {name: 'Customer'}), {target: {value: 'c'}});
+    chooseOption('Customer',/^Buyer/);
     expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(await screen.findByRole('dialog', { name: 'Discard unsaved changes?' })).toBeInTheDocument();

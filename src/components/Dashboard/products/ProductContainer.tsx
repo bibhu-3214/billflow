@@ -1,3 +1,5 @@
+import {totalAmounts} from '../../../utils/overview';
+import {money} from '../../../utils/indiaBilling';
 import { ui } from '../../../styles/ui';
 import { Plus as AddIcon, Search, Package as LocalMallRoundedIcon } from 'lucide-react';
 import { Button, Typography, InputAdornment, Paper, Toolbar } from '../../ui/primitives';
@@ -20,8 +22,8 @@ export default function ProductContainer() {
     const [searchResult, setSearchResult] = useState<Product[]>([]);
     const [qualityFilter, setQualityFilter] = useState('All');
     const products = useSelector((state) => state.products);
-    const catalogValue = products.reduce((sum, product) => sum + Number(product.price || 0), 0);
-    const averagePrice = products.length ? Math.round(catalogValue / products.length) : 0;
+    const catalogValue = totalAmounts(products.map(product=>product.price));
+    const averagePrice = products.length ? catalogValue / products.length : 0;
     const reviewed = useMemo(() => catalogReview(products), [products]);
 
     useEffect(() => {
@@ -40,8 +42,8 @@ export default function ProductContainer() {
                 </div>
                 <div className={ui("workspace-hero-stats")}>
                     <div><span>Total products</span><strong>{products.length}</strong></div>
-                    <div><span>Average price</span><strong>₹{averagePrice.toLocaleString('en-IN')}</strong></div>
-                    <div><span>Sum of list prices</span><strong>₹{catalogValue.toLocaleString('en-IN')}</strong></div>
+                    <div><span>Average price</span><strong>{money(averagePrice)}</strong></div>
+                    <div><span>Sum of list prices</span><strong>{money(catalogValue)}</strong></div>
                 </div>
             </header>
             <StockDesk />
