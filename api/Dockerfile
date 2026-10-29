@@ -4,7 +4,7 @@ COPY package.json yarn.lock .yarnrc .npmrc ./
 RUN corepack enable && yarn install --frozen-lockfile --non-interactive
 COPY public ./public
 COPY src ./src
-COPY index.html vite.config.mjs ./
+COPY index.html vite.config.mjs tsconfig.json tsconfig.app.json eslint.config.mjs ./
 RUN REACT_APP_ACCOUNT_BACKEND=django yarn build
 
 FROM python:3.13-slim

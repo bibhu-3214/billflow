@@ -30,3 +30,8 @@ SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Host-only cookies cannot be planted by a sibling subdomain.
+SESSION_COOKIE_NAME = "__Host-billflow_session"
+CSRF_COOKIE_NAME = "__Host-billflow_csrf"
+CSRF_COOKIE_HTTPONLY = True

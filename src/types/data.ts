@@ -1,0 +1,65 @@
+import type { CatalogLineInput, BackupPreview, BusinessSettings, CorrectionInput, Credentials, Customer, CustomerInput, Draft, DraftInput, FollowUp, FollowUpInput, ImportPreview, Invoice, InvoiceInput, InvoiceTemplate, PaymentInput, Product, ProductInput, PublicConfig, Quotation, Registration, StockInput, StockRecord, TransferPayload, UserProfile, Workspace } from './domain';
+export interface DataClient {
+    isCloud?: boolean;
+    initialize?: () => Promise<void>;
+    hasActiveSession(): boolean;
+    getCurrentUser(): UserProfile;
+    clearSession(): void | Promise<void>;
+    register(values: Registration): Promise<unknown>;
+    login(values: Credentials): Promise<{ user: UserProfile }>;
+    openDemo(): Promise<{ user: UserProfile }>;
+    exportBackup(password?: string): Promise<string>;
+    previewBackup(text: string, password: string): Promise<BackupPreview>;
+    restoreBackup(text: string, password: string): Promise<string>;
+    getSettings(): Promise<BusinessSettings>;
+    saveSettings(values: Partial<Omit<BusinessSettings, 'dueDays'>> & { dueDays?: number | string }): Promise<BusinessSettings>;
+    getCustomers(): Promise<Customer[]>;
+    addCustomer(values: CustomerInput): Promise<Customer>;
+    editCustomer(id: string, values: CustomerInput): Promise<Customer>;
+    removeCustomer(id: string): Promise<Customer>;
+    getProducts(): Promise<Product[]>;
+    addProduct(values: ProductInput): Promise<Product>;
+    editProduct(id: string, values: ProductInput): Promise<Product>;
+    removeProduct(id: string): Promise<Product>;
+    getBills(): Promise<Invoice[]>;
+    getBill(id: string): Promise<Invoice>;
+    addBill(values: InvoiceInput): Promise<Invoice>;
+    removeBill(id: string): Promise<Invoice>;
+    recordPayment(id: string, values: PaymentInput): Promise<Invoice>;
+    correctInvoice(id: string, values: CorrectionInput): Promise<Invoice>;
+    getInvoiceDrafts(): Promise<Draft[]>;
+    saveInvoiceDraft(values: DraftInput, id?: string | null, revision?: number | null): Promise<Draft>;
+    duplicateInvoiceDraft(id: string, revision: number): Promise<Draft>;
+    removeInvoiceDraft(id: string, revision: number): Promise<Draft>;
+    getQuotations(): Promise<Quotation[]>;
+    saveQuotation(values: DraftInput): Promise<Quotation>;
+    setQuotationStatus(id: string, revision: number, status: string): Promise<Quotation>;
+    getInvoiceTemplates(): Promise<InvoiceTemplate[]>;
+    saveInvoiceTemplate(values: Partial<Omit<InvoiceTemplate, 'lineItems'>> & {lineItems: CatalogLineInput[]}): Promise<InvoiceTemplate>;
+    removeInvoiceTemplate(id: string): Promise<void>;
+    draftFromTemplate(id: string): Promise<Draft>;
+    getStockRecords(): Promise<StockRecord[]>;
+    recordStockMovement(values: StockInput): Promise<StockRecord>;
+    getFollowUps(): Promise<FollowUp[]>;
+    saveFollowUp(values: FollowUpInput, id?: string | null, revision?: number | null): Promise<FollowUp>;
+    setFollowUpStatus(id: string, revision: number, status: string, outcome: string): Promise<FollowUp>;
+    publicConfig?: () => Promise<PublicConfig>;
+    previewImport?: (payload: TransferPayload) => Promise<ImportPreview>;
+    commitImport?: (values: ImportPreview & { payload: TransferPayload; confirmation: string }) => Promise<unknown>;
+    deleteAccount?: (password: string) => Promise<unknown>;
+}
+export type BrowserDataClient = Omit<DataClient, 'isCloud' | 'publicConfig' | 'previewImport' | 'commitImport' | 'deleteAccount'> & { isCloud?: false };
+export type ResponseLike = Pick<Response, 'ok' | 'status'> & { json(): Promise<unknown> };
+export type FetchTransport = (path: string, options?: RequestInit) => Promise<ResponseLike>;
+export interface ApiEnvelope { status?: number; user?: UserProfile; detail?: string; errors?: { message?: string }[]; data?: { flows?: { id: string }[] } }
+export interface CloudClient extends Omit<DataClient, 'isCloud' | 'exportBackup' | 'previewBackup' | 'restoreBackup' | 'clearSession'> {
+    isCloud: true;
+    initialize(): Promise<void>;
+    clearSession(): Promise<void>;
+    publicConfig(): Promise<PublicConfig>;
+    auth(path: string, values: unknown, pending?: boolean): Promise<ApiEnvelope>;
+    exportWorkspace(): Promise<{ profile: UserProfile; workspace: Workspace }>;
+    previewImport(payload: TransferPayload): Promise<ImportPreview>;
+    commitImport(values: ImportPreview & { payload: TransferPayload; confirmation: string }): Promise<unknown>;
+    deleteAccount(password: string): Promise<unknown>;
+}

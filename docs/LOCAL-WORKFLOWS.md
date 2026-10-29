@@ -78,17 +78,17 @@ The sticky header separates brand/workspace identity and utilities from a dedica
 
 Record actions use compact outlined icon controls with neutral, theme-aware resting surfaces, descriptive tooltips and visible keyboard focus. Edit gains an accent on hover; delete gains a restrained warning tone without bright permanent tiles. Sign-out uses a separate line-icon utility button. Coarse-pointer devices receive 44px targets, and interaction motion respects reduced-motion preferences. Confirmation and linked-record deletion safeguards remain unchanged.
 
-Use the sun/moon button in the header to switch between light and dark appearance, including on public pages. On first use the app follows your system preference; a manual choice is remembered on this browser and takes priority over system changes. The non-sensitive `billflow.appearance` preference is stored separately from business records and synchronizes across tabs. If browser storage is unavailable, switching still works for the current session. Forms, menus, tables and dialogs share the selected Material UI palette and custom surface tokens. Invoice/quotation previews and printed documents stay ink-on-white; no business data is changed by the toggle.
+Use the sun/moon button in the header to switch between light and dark appearance, including on public pages. On first use the app follows your system preference; a manual choice is remembered on this browser and takes priority over system changes. The non-sensitive `billflow.appearance` preference is stored separately from business records and synchronizes across tabs. If browser storage is unavailable, switching still works for the current session. Forms, menus, tables and dialogs use Tailwind utilities and the selected surface tokens. Invoice/quotation previews and printed documents stay ink-on-white; no business data is changed by the toggle.
 
 BillFlow uses task-specific widths rather than stretching every dialog across the screen: compact decisions (440px), search/reminders (600px), stock/follow-up forms (640px), account/document views (760px), record studios (920px), and the two-column invoice composer (960px). These are maximums, not fixed mobile widths. Dialogs keep viewport gutters, scroll within their content area, and retain reachable action footers. Invoice details and statements use document-friendly page widths; settings group identity, branding and payment instructions into separate sections. Interactive density rules are screen-only so printed documents keep their own layout.
 
 The invoice composer separates customer/schedule, tax treatment, line items and payment terms, with a live totals review and a guarded issue action. Visual feedback uses brief section arrivals, item insertion and hover/focus transitions. Operational screens avoid perpetual animation; `prefers-reduced-motion` disables animations and transitions. Navigation to a different page resets the scroll position; query-only changes keep the current position. Dirty-state confirmation, failed-save retention and browser-local data limitations remain unchanged.
 
-Quick payment terms—Due today, Net 7, Net 15 and Net 30—set the due date relative to the invoice date. A duplicated draft retains its item bundle but requires a fresh due date. Draft review includes automated coverage for storage failures, stale revisions, repeat issuance, older backups, failed-save retention and async editor cleanup, plus browser checks of save/reload/resume/issue and responsive layouts. The existing Kendo PDF license warning remains a separate release concern.
+Quick payment terms—Due today, Net 7, Net 15 and Net 30—set the due date relative to the invoice date. A duplicated draft retains its item bundle but requires a fresh due date. Draft review includes automated coverage for storage failures, stale revisions, repeat issuance, older backups, failed-save retention and async editor cleanup, plus browser checks of save/reload/resume/issue and responsive layouts. Financial PDF exports use jsPDF/AutoTable with embedded Noto Sans.
 
 UI changes must be reviewed on desktop, tablet and phone: inspect dialogs and select menus, long content, keyboard focus, scrolling/action reachability, reduced motion and empty states. Keep this section aligned with the shared styles and `WorkspaceDialog` size variants; passing tests does not replace visual review.
 
-Dialog text may wrap for long content, but outlined-input notch legends must stay single-line. Material UI deliberately collapses these hidden labels; wrapping them creates phantom scroll space beneath form actions. The shared dialog rule and regression test protect this boundary without imposing fixed modal heights or clipping real form content.
+Fields use visible labels above native inputs and selects, with associated validation/help text. Long labels stay visually bounded and retain their full accessible names. Radix dialogs trap focus, support guarded Escape/backdrop dismissal and restore focus to their opener; nested discard prompts retain unfinished input.
 
 Outlined field labels are bounded in both resting and floating states, with ellipsis only when space is genuinely constrained; their full accessible names remain intact. Follow-up search retains a useful desktop width, while compact stock filters and mobile layouts keep their own sizing. Review long labels in light/dark themes and at narrow viewport widths.
 
@@ -165,10 +165,10 @@ Installation also applies two small, versioned patches to Jest's URL dependencie
 ## Technology
 
 - **Application:** React 17, React Router, Redux, Redux Thunk
-- **Interface:** Material UI, custom responsive CSS, CSS animations
+- **Interface:** Tailwind CSS 4, Radix Dialog, native form controls, Lucide icons
 - **Forms:** Formik and Yup
 - **Dates:** native date controls and Moment.js
-- **Documents:** KendoReact PDF Export
+- **Documents:** jsPDF and jsPDF-AutoTable, embedded Noto Sans
 - **Persistence:** Web Crypto API, `localStorage`, and `sessionStorage`
 - **Testing:** Jest and React Testing Library
 
@@ -180,15 +180,15 @@ src/
 │   ├── Authentication/       # Landing, registration, and sign-in
 │   └── Dashboard/            # Overview, customers, products, and invoices
 ├── data/
-│   └── localData.js          # Encrypted browser persistence and sessions
+│   └── localData.ts          # Encrypted browser persistence and sessions
 ├── Redux/
 │   ├── Actions/              # Async application operations
 │   └── Reducers/             # Domain state management
 ├── helper/                   # Protected route components
 ├── utils/                    # Billing and reporting utilities
-├── App.js                    # Application routes
-├── index.css                 # Global design system and motion
-└── theme.js                  # Material UI theme configuration
+├── App.tsx                    # Application routes
+├── styles.css                # Tailwind entry, tokens, base, motion and print
+└── styles/                   # Typed Tailwind recipes and class composition
 ```
 
 ## Data and privacy

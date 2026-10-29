@@ -16,12 +16,12 @@ from mail.models import Budget, Delivery
 def claim():
     now = timezone.now()
     with transaction.atomic():
+        # Use the same lock order for admission and delivery.
+        Budget.objects.get_or_create(key="lock")
+        Budget.objects.select_for_update().get(key="lock")
         Delivery.objects.filter(expires_at__lte=now).exclude(
             status__in=["sent", "captured", "expired"]
         ).update(status="expired", body="", html="", recipient="", subject="")
-        # One fixed lock serializes budget reservations across workers.
-        Budget.objects.get_or_create(key="lock")
-        Budget.objects.select_for_update().get(key="lock")
         keys = [
             ("D" + now.strftime("%Y%m%d"), settings.EMAIL_BUDGET_DAILY),
             ("M" + now.strftime("%Y%m"), settings.EMAIL_BUDGET_MONTHLY),
@@ -32,24 +32,47 @@ def claim():
             if budget.attempts >= limit:
                 return None
             budgets.append(budget)
-        row = (
-            Delivery.objects.select_for_update(skip_locked=True)
-            .filter(
-                status="pending",
-                next_attempt__lte=now,
-                expires_at__gt=now,
-                attempts__lt=8,
+        row = None
+        purpose_budgets = []
+        # Separate queues and daily/monthly allocations protect recovery from signup floods.
+        for purpose, prefix, share in [
+            ("security", "S", 0.10),
+            ("recovery", "R", 0.25),
+            ("verification", "V", 0.65),
+        ]:
+            selected = []
+            for key, limit in [
+                (prefix + now.strftime("%Y%m%d"), max(1, int(settings.EMAIL_BUDGET_DAILY * share))),
+                (prefix + now.strftime("%Y%m"), max(1, int(settings.EMAIL_BUDGET_MONTHLY * share))),
+            ]:
+                budget, _ = Budget.objects.get_or_create(key=key)
+                if budget.attempts >= limit:
+                    break
+                selected.append(budget)
+            if len(selected) != 2:
+                continue
+            row = (
+                Delivery.objects.select_for_update(skip_locked=True)
+                .filter(
+                    purpose=purpose,
+                    status="pending",
+                    next_attempt__lte=now,
+                    expires_at__gt=now,
+                    attempts__lt=8,
+                )
+                .filter(Q(lease_until__isnull=True) | Q(lease_until__lte=now))
+                .order_by("created_at")
+                .first()
             )
-            .filter(Q(lease_until__isnull=True) | Q(lease_until__lte=now))
-            .order_by("created_at")
-            .first()
-        )
+            if row is not None:
+                purpose_budgets = selected
+                break
         if row is None:
             return None
         row.attempts += 1
         row.lease_until = now + timedelta(minutes=2)
         row.save(update_fields=["attempts", "lease_until"])
-        for budget in budgets:
+        for budget in [*budgets, *purpose_budgets]:
             budget.attempts += 1
             budget.save(update_fields=["attempts"])
         return row

@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "billing.middleware.SecurityHeaders",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -99,6 +100,12 @@ ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_EMAIL_SUBJECT_PREFIX = "[BillFlow] "
 ACCOUNT_PREVENT_ENUMERATION = True
+ACCOUNT_EMAIL_UNKNOWN_ACCOUNTS = False
+ACCOUNT_RATE_LIMITS = {
+    "signup": "3/1h/ip,12/1d/ip",
+    "reset_password": "5/1h/ip,12/1d/ip,3/1h/key",
+    "login_failed": "10/5m/ip,5/5m/key",
+}
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False
 ACCOUNT_LOGIN_ON_PASSWORD_RESET = False
 ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = True
@@ -198,3 +205,21 @@ LOGGING = {
         for name in ["django.server", "django.request"]
     },
 }
+
+# Capacity limits fail atomically and never prune financial request identities.
+WORKSPACE_MAX_BYTES = 64 * 1024 * 1024
+COMMAND_RECEIPT_MAX_COUNT = 10000
+COMMAND_RECEIPT_MAX_BYTES = 64 * 1024 * 1024
+COMMAND_RESULT_MAX_BYTES = 512 * 1024
+IMPORT_MAX_WORK_ITEMS = 100000
+
+# Link-based flows allow safe immutable pending-message coalescing.
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = False
+ACCOUNT_PASSWORD_RESET_BY_CODE_ENABLED = False
+ALLAUTH_TRUSTED_PROXY_COUNT = int(os.environ.get("DJANGO_TRUSTED_PROXY_COUNT", "0"))
+if not 0 <= ALLAUTH_TRUSTED_PROXY_COUNT <= 4:
+    raise ImproperlyConfigured("Set the actual trusted proxy count (0-4).")
+EMAIL_QUEUE_PER_PURPOSE = 200
+EMAIL_RECIPIENT_DAILY = 3
+EMAIL_ORIGIN_HOURLY = 5
+EMAIL_ORIGIN_DAILY = 12

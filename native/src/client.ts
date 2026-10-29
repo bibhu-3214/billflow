@@ -1,4 +1,7 @@
-export type Row = Record<string, any>;
+import type { WorkspaceResponse } from './types';
+export type Row = Record<string, unknown>;
+interface AuthResponse { status?: number; data?: {flows?: unknown[]}; meta?: {session_token?: string} }
+const record = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 export type Vault = { get(): Promise<string | null>; set(token: string): Promise<void>; clear(): Promise<void> };
 
 export function validateOrigin(value: string, development = false): string {
@@ -18,21 +21,24 @@ export class Client {
     private token: string | null = null;
     private generation = 0;
     private uncertain = new Map<string, string>();
-    private pending = new Map<string, Promise<Row>>();
+    private pending = new Map<string, Promise<unknown>>();
     private authBusy = false;
     constructor(origin: string, private vault: Vault, private uuid: () => string,
         private fetcher: typeof fetch = fetch, development = false) {
         this.origin = validateOrigin(origin, development);
     }
     async restore() { this.token = await this.vault.get(); }
-    async request(path: string, method = 'GET', values?: unknown, key?: string, allowPending = false): Promise<Row> {
+    async request<T = unknown>(path: string, method = 'GET', values?: unknown, key?: string, allowPending = false): Promise<T> {
         const generation = this.generation;
         const response = await this.fetcher(this.origin + path, {
             method, headers: { 'Content-Type': 'application/json',
                 ...(this.token ? { 'X-Session-Token': this.token } : {}), ...(key ? { 'Idempotency-Key': key } : {}) },
             ...(values === undefined ? {} : { body: JSON.stringify(values) }),
         });
-        const body = await response.json();
+        const body: unknown = await response.json();
+        const envelope = record(body) ? body : {};
+        const data = record(envelope.data) ? envelope.data : {};
+        const meta = record(envelope.meta) ? envelope.meta : {};
         if (generation !== this.generation) throw new Error('The account changed. Reopen this screen.');
         if (response.status === 401 && !allowPending) {
             this.token = null; this.generation += 1; this.uncertain.clear(); this.pending.clear();
@@ -40,20 +46,22 @@ export class Client {
             await this.vault.clear();
             throw new Error('Your session expired. Sign in again.');
         }
-        if (!response.ok && !(allowPending && response.status === 401 && body.data?.flows)) {
-            throw new Error(body.detail || body.errors?.map((e: Row) => e.message).join(' ') || 'The request could not be completed.');
+        if (!response.ok && !(allowPending && response.status === 401 && data.flows)) {
+            const detail = typeof envelope.detail === 'string' ? envelope.detail : '';
+            const errors = Array.isArray(envelope.errors) ? envelope.errors.filter(record).map(error => typeof error.message === 'string' ? error.message : '').filter(Boolean).join(' ') : '';
+            throw new Error(detail || errors || 'The request could not be completed.');
         }
-        if (path.startsWith('/_allauth/app/') && body.meta?.session_token) {
-            await this.vault.set(body.meta.session_token);
+        if (path.startsWith('/_allauth/app/') && typeof meta.session_token === 'string' && meta.session_token) {
+            await this.vault.set(meta.session_token);
             if (generation !== this.generation) throw new Error('Account changed. Sign in again.');
-            this.token = body.meta.session_token;
+            this.token = meta.session_token;
         }
-        return body;
+        return body as T;
     }
     async auth(action: string, values: Row) {
         if (this.authBusy) throw new Error('Wait for the current account request.');
         this.authBusy = true;
-        try { return await this.request('/_allauth/app/v1/auth/' + action, 'POST', values, undefined, true); }
+        try { return await this.request<AuthResponse>('/_allauth/app/v1/auth/' + action, 'POST', values, undefined, true); }
         finally { this.authBusy = false; }
     }
     async signOut() {
@@ -63,13 +71,13 @@ export class Client {
         await this.vault.clear();
     }
     async workspace() {
-        const result = await this.request('/api/v1/workspace');
+        const result = await this.request<WorkspaceResponse>('/api/v1/workspace');
         if (result.format !== 'billflow-workspace' || result.version !== 1 || !result.workspace || !result.profile) {
             throw new Error('The service returned an unsupported workspace.');
         }
         return result;
     }
-    command(action: string, args: unknown[]): Promise<Row> {
+    command(action: string, args: unknown[]): Promise<unknown> {
         const fingerprint = JSON.stringify([action, args]);
         const existing = this.pending.get(fingerprint);
         if (existing) return existing;

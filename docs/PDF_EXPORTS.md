@@ -9,7 +9,7 @@ Invoices, full credit notes and customer statements download directly using jsPD
 - Discounts, taxable value, CGST plus SGST/UTGST or IGST, invoice/credit totals, payments and balances are retained. Credit notes retain the original invoice, reason, actor and refund/filing limitation.
 - The PDF module loads on demand. Two same-origin TTF font files are fetched on first export and cached for that page session. Failed font loads can be retried. No document data is sent to a service.
 - Embedded Noto Sans supports rupees and accented Latin text. The renderer checks glyph coverage and refuses unsupported scripts/emoji with a visible error rather than exporting missing characters. This is not an Indic-script shaping implementation. Saved records remain unchanged; use Latin text for the export. It is not PDF/A or tagged-PDF certification.
-- PNG/JPEG data-URL logos retain aspect ratio within a 40 × 18 mm box. External URLs, malformed logos and images exceeding 16 million pixels stop the export. The existing 130 KB upload boundary remains. No remote logo fetch is performed.
+- PNG/JPEG data-URL logos retain aspect ratio within a 40 × 18 mm box. External URLs, malformed logos and images exceeding 4 million pixels stop the export. The existing 130 KB upload boundary remains. PNG decoded data is bounded to 32 MiB and its declared scanline size before the PDF decoder runs. Compressed ancillary metadata is stripped; palette/transparency data is retained. No remote logo fetch is performed.
 - Download names preserve invoice/credit references with filesystem separators and control characters replaced. Statements retain `Statement-YYYY-MM-DD.pdf`.
 - MIT notices for jsPDF/AutoTable and the SIL OFL 1.1 font notice are shipped in `public/licenses`, referenced by `public/THIRD_PARTY_NOTICES.txt`. Kendo packages, unused transitives and the Kendo-specific source-map exception were removed. This is not an audit of all dependency licenses.
 
@@ -19,7 +19,7 @@ Invoices, full credit notes and customer statements download directly using jsPD
 yarn install --frozen-lockfile --non-interactive
 CI=true yarn test --watchAll=false --runInBand
 yarn test:tooling
-yarn exec eslint src
+yarn typecheck
 CI=true yarn build
 node scripts/pdf-samples.cjs ../output/pdf
 # Optional local QA environment: pip install pypdf pypdfium2 pillow

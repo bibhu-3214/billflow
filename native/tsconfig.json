@@ -1,5 +1,16 @@
 {
   "extends": "expo/tsconfig.base",
-  "compilerOptions": {"strict": true, "noEmit": true},
-  "include": ["**/*.ts", "**/*.tsx"]
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "noImplicitAny": true,
+    "useUnknownInCatchVariables": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ]
 }

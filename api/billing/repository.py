@@ -3,8 +3,12 @@ import json
 import uuid
 from copy import deepcopy
 
+from django.conf import settings
 from django.db import transaction
+from django.db.models import BigIntegerField, Count, Func, Sum, TextField
+from django.db.models.functions import Cast
 
+from .limits import check_workspace_size, encoded_size
 from .models import AuditEvent, CommandReceipt, Invoice, Record, Workspace
 from .operations import Operations
 from .rules import COLLECTIONS, Conflict, DomainError, paise
@@ -38,6 +42,7 @@ def snapshot(workspace):
 
 
 def persist(workspace, before, after):
+    check_workspace_size(after)
     for kind in COLLECTIONS:
         old = {r.get("_id", r.get("product")): r for r in before[kind]}
         new = {r.get("_id", r.get("product")): r for r in after[kind]}
@@ -83,9 +88,29 @@ def execute(user, action, args, key):
             if receipt.digest != fingerprint:
                 raise Conflict("This request key was used for a different command.")
             return receipt.result
+        allocation = CommandReceipt.objects.filter(workspace=workspace).aggregate(
+            count=Count("id"),
+            size=Sum(
+                Func(
+                    Cast("result", TextField()),
+                    function="OCTET_LENGTH",
+                    output_field=BigIntegerField(),
+                )
+            ),
+        )
+        if allocation["count"] >= settings.COMMAND_RECEIPT_MAX_COUNT:
+            raise DomainError("Command history limit reached. Export a backup and contact support.")
         before = snapshot(workspace)
         after = deepcopy(before)
         result = Operations(after, user).dispatch(action, args)
+        result_size = encoded_size(result)
+        if (
+            result_size > settings.COMMAND_RESULT_MAX_BYTES
+            or (allocation["size"] or 0) + result_size > settings.COMMAND_RECEIPT_MAX_BYTES
+        ):
+            raise DomainError(
+                "Command history storage limit reached. Export a backup and contact support."
+            )
         persist(workspace, before, after)
         AuditEvent.objects.create(
             workspace=workspace, actor=user, action=action, revision=workspace.revision

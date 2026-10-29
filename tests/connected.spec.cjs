@@ -35,10 +35,8 @@ for (const [name, width, height] of [['desktop', 1440, 1000], ['tablet', 820, 11
         const dialog = page.getByRole('dialog');
         const reference = 'Acceptance ' + name + ' ' + crypto.randomUUID().slice(0, 8);
         await dialog.locator('#invoice-draft-title').fill(reference);
-        await dialog.locator('#invoice-customer').click();
-        await page.getByRole('option', { name: customer.name, exact: true }).click();
-        await dialog.locator('#invoice-product').click();
-        await page.getByRole('option', { name: new RegExp(product.name) }).click();
+        await dialog.locator('#invoice-customer').selectOption(customer._id);
+        await dialog.locator('#invoice-product').selectOption(product._id);
         await dialog.getByRole('button', { name: 'Add', exact: true }).click();
         await dialog.getByRole('button', { name: 'Save draft', exact: true }).click();
         await expect(dialog).not.toBeVisible();

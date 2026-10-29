@@ -3,10 +3,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const babel = require('@babel/core');
 const root = path.resolve(__dirname, '..');
-const originalLoader = require.extensions['.js'];
-require.extensions['.js'] = (module, filename) => {
-    if (!filename.startsWith(path.join(root, 'src', 'utils') + path.sep)) return originalLoader(module, filename);
-    const { code } = babel.transformFileSync(filename, { babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-modules-commonjs'] });
+require.extensions['.ts'] = (module, filename) => {
+    const { code } = babel.transformFileSync(filename, { babelrc: false, configFile: false,
+        presets: ['@babel/preset-typescript'], plugins: ['@babel/plugin-transform-modules-commonjs'] });
     module._compile(code, filename);
 };
 const { createInvoicePdf, createStatementPdf } = require('../src/utils/pdfDocuments');

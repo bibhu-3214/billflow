@@ -330,6 +330,8 @@ class Operations:
             raise DomainError("Payment date must be between invoice date and today.")
         if v.get("method") not in ["UPI", "Bank transfer", "Cash", "Card", "Cheque"]:
             raise DomainError("Choose a valid payment method.")
+        if len(bill.get("payments", [])) >= 1000:
+            raise DomainError("Invoice payment history limit reached.")
         bill.setdefault("payments", []).append(
             {
                 "_id": uid("payment"),

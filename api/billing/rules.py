@@ -229,7 +229,11 @@ def paid(bill):
 
 
 def require(records, key, revision=None):
-    record = next((r for r in records if r.get("_id", r.get("product")) == key), None)
+    record = (
+        records.get(key)
+        if isinstance(records, dict)
+        else next((r for r in records if r.get("_id", r.get("product")) == key), None)
+    )
     if not record:
         raise DomainError("Record is unavailable in this business.")
     if revision is not None and (isinstance(revision, bool) or record.get("revision") != revision):
@@ -237,7 +241,7 @@ def require(records, key, revision=None):
     return record
 
 
-def draft_fields(v, workspace, missing=False, preserve_prices=False):
+def draft_fields(v, workspace, missing=False, preserve_prices=False, products=None):
     customer = optional(v.get("customer"), "Customer", 100)
     if customer and not missing:
         require(workspace["customers"], customer)
@@ -247,7 +251,11 @@ def draft_fields(v, workspace, missing=False, preserve_prices=False):
     for item in v["lineItems"]:
         if not isinstance(item, dict):
             raise DomainError("Invalid draft item.")
-        product = next((p for p in workspace["products"] if p["_id"] == item.get("product")), None)
+        product = (
+            products.get(item.get("product"))
+            if products is not None
+            else next((p for p in workspace["products"] if p["_id"] == item.get("product")), None)
+        )
         if product is None and not missing:
             raise DomainError("A draft product is unavailable.")
         product = product or item

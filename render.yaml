@@ -23,6 +23,8 @@ services:
         generateValue: true
       - key: DJANGO_ALLOWED_HOSTS
         sync: false
+      - key: DJANGO_TRUSTED_PROXY_COUNT
+        sync: false
       - key: APP_ORIGIN
         sync: false
       - key: EMAIL_DELIVERY_MODE

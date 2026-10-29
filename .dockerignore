@@ -12,3 +12,9 @@ api/scripts
 **/.pytest_cache
 **/.ruff_cache
 *.log
+
+.cache
+**/.env
+**/.env.*
+**/*.pem
+**/*.key

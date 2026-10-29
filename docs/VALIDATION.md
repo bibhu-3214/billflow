@@ -6,7 +6,7 @@
 | --- | --- |
 | Web/domain/component tests | 28 suites, 110 tests passed on Jest 30 |
 | Tooling | International-host DOM regression passed |
-| PostgreSQL/API | 34 tests passed on real disposable PostgreSQL, including shared Python/web calculation fixtures |
+| PostgreSQL/API | 39 tests passed on real disposable PostgreSQL, including shared calculation fixtures, local test-account reuse and production guards |
 | Concurrency/retry | Eight simultaneous issuances yielded unique consecutive numbers; source conversion and request-key retries did not duplicate invoices |
 | Failure paths | Injected database failure rolled back numbering and draft consumption; stale editors, overpayments, incorrect tax, ownership and missing business identity were rejected |
 | Account boundaries | Verification, recovery, session revocation, CSRF and owner scoping passed; logout clears every private UI collection and late responses are discarded |
@@ -68,3 +68,19 @@ api/.venv/bin/python scripts/verify-pdfs.py output/pdf
 Docker execution and hosted Render schema/resource behavior were not run here because Docker is unavailable. The committed GitHub jobs have not run remotely. Real Resend/OAuth/mailboxes, managed-host restore and rollback, signed mobile binaries, physical devices, native provider links, statutory suitability and an independent security review remain outstanding.
 
 The historical local-only evidence is retained separately in VALIDATION-LOCAL-2026-10-09.md.
+
+## TypeScript migration and focused hardening follow-up — 28 October 2026
+
+The browser application and all frontend tests now use strict TypeScript (102 existing modules/tests renamed), with shared domain/data contracts and typed Redux hooks/actions. JavaScript Node configuration and orchestration remain intentional. Separate application and test type checks are wired into build/CI, and the Docker build includes the TypeScript configs. The Django code remains Python.
+
+Validation on the modified source: strict typecheck; 120 frontend tests across 30 suites; one tooling test; local and connected production bundles; nine PDF fixtures with text/totals/page/image checks; and connected browser workflows at desktop/tablet/phone sizes. The existing large initial-bundle warning remains.
+
+The long-running deep security scan was cancelled at the user's request and replaced with focused review; its partial output is not a completed scan. Focused hardening tests passed: 53 PostgreSQL/API tests, Python lint/format checks, migration consistency, synthetic production deployment checks, security headers/cookies, harmless Vite private-file sentinels, cross-tab sign-out, and production-built form/theme/font rendering without CSP violations. These checks do not establish whether a historical compromise occurred. Real hosting/ingress/email/OAuth acceptance remains outstanding. The user's running development stack was preserved; backend changes/migrations activate on its next restart.
+
+## Tailwind migration — 29 October 2026
+
+The web interface now uses Tailwind CSS 4.3.3 through its Vite plugin, typed shared utility recipes, native form/table primitives, Radix dialogs and Lucide icons. Material UI/core/icons, the JSS theme and SweetAlert have been removed. React Native styling is unchanged. See [Tailwind development](TAILWIND.md).
+
+The modified source passed strict TypeScript/no-any lint, 121 frontend tests across 31 suites, all three tooling policy checks, local and connected production builds, and nine PDF fixture checks. Six connected browser cases cover desktop/tablet/phone financial flows, theme persistence, bounded layouts, focus trapping/restoration, nested discard prompts and quotation printing. An immediate-print opacity regression was corrected by disabling animations in print media; the resulting quotation PDF was rendered and inspected. Test services used separate ports and disposable PostgreSQL; the existing development stack and private records were preserved.
+
+The existing large JavaScript chunk warning remains. These checks establish local frontend behavior, not hosted deployment, native-device execution or a new security audit.

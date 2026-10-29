@@ -2,7 +2,7 @@
 
 **Your business, in focus.** Customers, catalog, invoices and collections in one considered workspace.
 
-BillFlow is being upgraded into a customer product using the same development-first approach as Perqelle: a responsive web app, Django/PostgreSQL backend and an Android/iPhone candidate.
+BillFlow has a strict TypeScript/React frontend and is being upgraded into a customer product using the same development-first approach as Perqelle: a responsive web app, Django/PostgreSQL backend and an Android/iPhone candidate.
 
 **Status: local development; not publicly released.** Hosting, domains, live email, support mailboxes and store accounts have not been activated. See [Delivery status](docs/DELIVERY-STATUS.md) for evidence and outstanding work.
 
@@ -32,6 +32,10 @@ Set REACT_APP_ACCOUNT_BACKEND=django for connected mode; leave it unset for the 
 
 The backend applies domain validation, transactional numbering, record revisions and request identities. The schema stores catalog/operational records individually as typed JSON, with separate invoice, receipt and audit tables. This is not a fully normalized accounting ledger or tamper-proof history.
 
+## Frontend development
+
+All application code and frontend tests in `src/` use `.ts`/`.tsx`. Run `yarn check` (or `npm run check`) for strict types and no-any lint checks, `yarn test --runInBand` for tests, and `yarn build` or `yarn build:connected` for a checked production build. The same no-any policy applies to frontend tests; native lint is available through `yarn lint:native` after installing native dependencies. Node orchestration/test configuration remains `.mjs`/`.cjs`. See [TypeScript development](docs/TYPESCRIPT.md).
+
 ## Run locally
 
 For the connected web app, API, private PostgreSQL and automatic local email capture:
@@ -41,11 +45,15 @@ yarn setup:local
 yarn dev:local
 ~~~
 
+You can also start the same stack with `npm run dev` or `yarn dev`.
+
+The connected development stack creates a verified local test account and prefills the sign-in form. Its generated credentials persist privately in the ignored `api/.local/local-login.json` file; they are excluded from production builds. Other accounts and registration remain available.
+
 Open http://127.0.0.1:3000. Create an account and open its verification link from the private JSON file in api/.local/mail/. Captured email is not sent externally. Data persists in api/.local/postgres between restarts. Stop the stack with Ctrl+C.
 
 The separate commands below remain available for individual services and the local-only browser demo.
 
-Requires Node 22/24, Yarn 1.22.22 and Python 3.13. The web app now uses Vite 7 and Jest 30; the React/Material UI interface remains compatible with the established workflows.
+Requires Node 22/24, Yarn 1.22.22 and Python 3.13. The web app now uses Vite 7 and Jest 30; the React interface uses Tailwind CSS 4, accessible Radix dialogs and Lucide icons. See [Tailwind development](docs/TAILWIND.md).
 
 ~~~sh
 yarn install --frozen-lockfile

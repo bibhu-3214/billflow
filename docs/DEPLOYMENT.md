@@ -33,3 +33,13 @@ For rollback, stop writes/jobs, preserve a verified database snapshot and restor
 The first release is free. Team authorization, statutory retention/deletion, staff/database-operator controls, independent audit integrity and load acceptance still need business-specific decisions.
 
 No hosting, purchase, provider activation, public deployment, signing, store submission or customer communication was performed.
+
+## Security configuration added for local review
+
+Production sends CSP, Permissions-Policy and same-origin resource headers. Sessions and CSRF use secure host-only cookies. Development retains local HTTP support; the optional generated login prefill is restricted to connected Vite development and never enabled by production builds. Vite denies backend/runtime/cache files, and Docker excludes local runtime directories and environment files.
+
+`DJANGO_TRUSTED_PROXY_COUNT` defaults to `0` (direct peer only), accepts 0–4, and must match a verified ingress topology before launch. The trusted edge must strip client-supplied forwarding headers and set the real chain. Signup and password recovery are limited separately; unknown-account recovery emails are disabled. Real ingress, edge limits, provider credentials, email delivery and OAuth remain deployment acceptance work.
+
+The durable mail outbox limits pending jobs, recipient frequency and origin frequency. Daily/monthly delivery budgets reserve separate security, recovery and verification lanes. Pending verification/recovery jobs coalesce only while account credential/login state is unchanged. The additive `mail.0002_delivery_admission` migration must run with the new backend code; the local startup script migrates before serving. A backend already running with `--noreload` loads these changes only on its next restart.
+
+Imports reject oversized nested collections and excessive aggregate work before copying records or catalog lookups. Workspace JSON is limited to 64 MiB. Command history is limited to 10,000 receipts / 64 MiB of response JSON, with a 512 KiB maximum individual response. Existing request-key replays are checked before capacity limits and remain exact; failed new commands roll back their business changes and audit entries. Hitting capacity requires a reviewed support/storage policy: never delete request receipts to bypass the limit, because retries rely on them. Invoice payment history is capped at 1,000 entries without discarding prior records.

@@ -1,0 +1,59 @@
+@import "tailwindcss" source(".");
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+@theme inline {
+    --color-ink:var(--ink); --color-muted:var(--muted); --color-line:var(--line);
+    --color-primary:var(--primary); --color-primary-soft:var(--primary-soft); --color-success:var(--success);
+    --color-surface:var(--surface); --color-canvas:var(--canvas); --color-field:var(--field); --color-danger:var(--danger);
+    --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+@layer base {
+    :root { --ink:#172033;
+        --muted:#65708a;
+        --line:#e7eaf1;
+        --primary:#5b5ce2;
+        --primary-soft:#eef0ff;
+        --success:#0f766e;
+        --surface:rgba(255, 255, 255, 0.86);
+        --shadow:0 22px 60px rgba(31, 41, 68, 0.09);
+        --shadow-premium:0 28px 80px rgba(37, 42, 82, .13);
+        --workspace-width:1104px; --canvas:#f5f6fa; --field:#fbfcfe; --danger:#b63e50; color-scheme:light; }
+    html[data-theme='dark'] { --ink:#e9edf7;
+        --muted:#a3aec4;
+        --line:#303a50;
+        --primary:#aaa5ff;
+        --primary-soft:#2c2b4a;
+        --success:#72d6c3;
+        --surface:#191f2e;
+        --shadow:0 12px 36px #00000020; --canvas:#10141f; --field:#151c2a; --danger:#ffb3bd; color-scheme:dark; }
+    h1 { @apply font-extrabold tracking-tight; }
+    h2,h3,h4 { @apply font-bold tracking-tight; }
+    body { @apply min-w-[320px] bg-canvas font-sans text-ink antialiased; }
+    button,a,input,select,textarea { -webkit-tap-highlight-color:transparent; }
+    button:not(:disabled),summary { @apply cursor-pointer; }
+    :where(button,a,summary):focus-visible { @apply outline-2 outline-offset-3 outline-primary; }
+    button,input,select,textarea { font:inherit; }
+    svg { @apply shrink-0; }
+    html[data-session-checking] body,html[data-session-checking] body * { @apply invisible!; }
+}
+@keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes float { 50% { transform: translateY(-8px); } }
+@keyframes pulse-ring { 70% { box-shadow: 0 0 0 10px rgba(15,118,110,0); } }
+@keyframes shimmer { from { transform: translateX(-130%); } to { transform: translateX(130%); } }
+@keyframes surface-arrive { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
+/* Browser quotation printing is independent of screen appearance and PDF export. */
+@media print {
+    *,*::before,*::after { animation:none!important; transition:none!important; }
+    @page { size:A4; margin:12mm; }
+    html[data-theme] { color-scheme:light; }
+    body { @apply bg-white! text-slate-900!; }
+    body:has(.quotation-print) #root { @apply hidden!; }
+    body:has(.quotation-print) * { visibility:hidden; }
+    body:has(.quotation-print) .quotation-print,body:has(.quotation-print) .quotation-print * { visibility:visible; }
+    body:has(.quotation-print) .ui-dialog-layer,body:has(.quotation-print) .ui-dialog-panel { position:static!important;display:block!important;height:auto!important;max-height:none!important;overflow:visible!important; }
+    body:has(.quotation-print) .ui-dialog-content { overflow:visible!important; }
+    body:has(.quotation-print) :is(.studio-dialog-title,.quote-actions,.quote-conversion) { display:none!important; }
+    body:has(.quotation-print) .quotation-print { position:absolute;inset:0 auto auto 0;width:100%;border:0;border-radius:0; }
+    .quote-table-scroll { overflow:visible!important; }
+    .quotation-print tr { break-inside:avoid; }
+}

@@ -29,6 +29,9 @@ def main():
     if not 1024 <= port <= 65535:
         raise SystemExit("Invalid local API port.")
     call_command("migrate", verbosity=0, interactive=False)
+    from scripts.local_login import ensure_local_login
+
+    ensure_local_login()
 
     def terminate(signum, frame):
         raise SystemExit(128 + signum)
