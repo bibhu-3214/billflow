@@ -323,8 +323,8 @@ export default function CustomerInsights() {
                                 <div className="rounded-2xl border border-dashed border-line p-8 lg:col-span-2">
                                     <h3 className="font-semibold text-ink">Bring the history into BillFlow.</h3>
                                     <p className="mt-3 text-sm leading-7 text-muted">
-                                        Export JSON from Customer Insights, then review and import it here. The source
-                                        app and its accounts remain available. Your BillFlow encrypted workspace backup
+                                        Import a saved Customer Insights JSON export to bring historical purchases into BillFlow.
+                                        Your BillFlow encrypted workspace backup
                                         includes imported purchases and their customer links.
                                     </p>
                                 </div>
