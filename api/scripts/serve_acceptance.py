@@ -32,4 +32,8 @@ for name in [
         business_address="Mumbai",
     )
     EmailAddress.objects.create(user=user, email=user.email, verified=True, primary=True)
-call_command("runserver", "127.0.0.1:8001", use_reloader=False)
+call_command(
+    "runserver",
+    "127.0.0.1:" + os.environ.get("BILLFLOW_ACCEPTANCE_PORT", "8001"),
+    use_reloader=False,
+)

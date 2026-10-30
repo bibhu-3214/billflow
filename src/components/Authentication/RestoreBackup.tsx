@@ -40,7 +40,7 @@ export default function RestoreBackup() {
             <input id='restore-file' type='file' className={fileInputClass} accept='.json,application/json' onChange={e => { resetPreview(); setFile(e.target.files?.[0] || null); }} />
             <TextField id='restore-password' label='Backup account password' type='password' required autoComplete='off' fullWidth value={password} onChange={e => { resetPreview(); setPassword(e.target.value); }} />
             {preview && <div className={ui("backup-preview")}><strong>{preview.businessName}</strong><p>{preview.email}</p><p>Backup created: {preview.createdAt}</p>
-                <p>{preview.customers} customers · {preview.products} products · {preview.invoices} invoices · {preview.drafts || 0} drafts · {preview.quotations || 0} quotations · {preview.templates || 0} templates · {preview.trackedProducts || 0} tracked stock records · {preview.followUps || 0} follow-ups</p>
+                <p>{preview.customers} customers · {preview.products} products · {preview.invoices} invoices · {preview.drafts || 0} drafts · {preview.quotations || 0} quotations · {preview.templates || 0} templates · {preview.trackedProducts || 0} tracked stock records · {preview.followUps || 0} follow-ups · {preview.historicalSales || 0} historical purchases</p>
                 <p>Recovery restores this snapshot only. Later transactions are not included. Do not issue invoices from both copies: their number sequences can overlap.</p>
                 <TextField id='restore-confirmation' label='Type RESTORE to confirm' required fullWidth value={confirmation} onChange={e => setConfirmation(e.target.value)} />
             </div>}

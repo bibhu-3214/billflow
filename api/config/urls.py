@@ -1,6 +1,7 @@
 from django.urls import include, path, re_path
 
 from billing import views
+from billing.historical_views import HistoricalSalesCommitView, HistoricalSalesPreviewView
 
 urlpatterns = [
     path("api/v1/health/live", views.live),
@@ -8,6 +9,8 @@ urlpatterns = [
     path("api/v1/config", views.config),
     path("api/v1/me", views.MeView.as_view()),
     path("api/v1/account/delete", views.AccountDeleteView.as_view()),
+    path("api/v1/historical-sales/preview", HistoricalSalesPreviewView.as_view()),
+    path("api/v1/historical-sales/commit", HistoricalSalesCommitView.as_view()),
     path("api/v1/workspace", views.WorkspaceView.as_view()),
     path("api/v1/actions/<str:action>", views.ActionView.as_view()),
     path("api/v1/import/preview", views.ImportPreviewView.as_view()),

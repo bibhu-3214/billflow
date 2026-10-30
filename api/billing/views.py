@@ -150,6 +150,7 @@ READS = {
     "getInvoiceTemplates": "invoiceTemplates",
     "getStockRecords": "stockRecords",
     "getFollowUps": "followUps",
+    "getHistoricalSales": "historicalSales",
 }
 
 

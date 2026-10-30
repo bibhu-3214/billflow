@@ -14,6 +14,7 @@ const Home = lazy(() => import('./components/Authentication/Home'));
 const Register = lazy(() => import('./components/Authentication/Register'));
 const Login = lazy(() => import('./components/Authentication/Login'));
 const Admin = lazy(() => import('./components/Dashboard/Admin/Admin'));
+const CustomerInsights = lazy(() => import('./components/Dashboard/CustomerInsights'));
 const CustomerContainer = lazy(() => import('./components/Dashboard/customers/CustomerContainer'));
 const ProductContainer = lazy(() => import('./components/Dashboard/products/ProductContainer'));
 const BillContainer = lazy(() => import('./components/Dashboard/bills/BillContainer'));
@@ -47,6 +48,7 @@ const App = () => {
                     <PrivateRoute path='/billdetails/:id' component={ShowBillsById} exact />
                     <PrivateRoute path='/billing' component={BillContainer} exact />
                     <PrivateRoute path='/product' component={ProductContainer} exact />
+                    <PrivateRoute path='/customer-insights' component={CustomerInsights} exact />
                     <PrivateRoute path='/customer' component={CustomerContainer} exact />
                     <PrivateRoute path='/admin' component={Admin} exact />
                     <ProtectedRoute path='/login' component={Login} exact />

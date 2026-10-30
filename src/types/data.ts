@@ -1,4 +1,4 @@
-import type { CatalogLineInput, BackupPreview, BusinessSettings, CorrectionInput, Credentials, Customer, CustomerInput, Draft, DraftInput, FollowUp, FollowUpInput, ImportPreview, Invoice, InvoiceInput, InvoiceTemplate, PaymentInput, Product, ProductInput, PublicConfig, Quotation, Registration, StockInput, StockRecord, TransferPayload, UserProfile, Workspace } from './domain';
+import type { HistoricalSale, HistoricalSalesPreview, CatalogLineInput, BackupPreview, BusinessSettings, CorrectionInput, Credentials, Customer, CustomerInput, Draft, DraftInput, FollowUp, FollowUpInput, ImportPreview, Invoice, InvoiceInput, InvoiceTemplate, PaymentInput, Product, ProductInput, PublicConfig, Quotation, Registration, StockInput, StockRecord, TransferPayload, UserProfile, Workspace } from './domain';
 export interface DataClient {
     isCloud?: boolean;
     initialize?: () => Promise<void>;
@@ -12,6 +12,9 @@ export interface DataClient {
     previewBackup(text: string, password: string): Promise<BackupPreview>;
     restoreBackup(text: string, password: string): Promise<string>;
     getSettings(): Promise<BusinessSettings>;
+    getHistoricalSales(): Promise<HistoricalSale[]>;
+    previewHistoricalSales(payload: unknown, links: Record<string, string>): Promise<HistoricalSalesPreview>;
+    commitHistoricalSales(payload: unknown, links: Record<string, string>, preview: HistoricalSalesPreview, confirmation: string): Promise<{ imported: number; duplicates: number }>;
     saveSettings(values: Partial<Omit<BusinessSettings, 'dueDays'>> & { dueDays?: number | string }): Promise<BusinessSettings>;
     getCustomers(): Promise<Customer[]>;
     addCustomer(values: CustomerInput): Promise<Customer>;

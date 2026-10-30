@@ -1,3 +1,4 @@
+import { historyFingerprint, planHistoricalSales, validateHistoricalSales } from '../utils/historicalSales';
 import type { BrowserDataClient } from '../types/data';
 import type { BrowserDatabase, BrowserSession, StoredUser, UserProfile, Workspace, EncryptedPayload, EncryptedBackup, BackupContents, ProductInput, CustomerInput, DraftInput, FollowUpInput, InvoiceTemplate, InvoiceLineInput, Quotation, FollowUp, StockRecord, StockMovement, BusinessSettings, Invoice } from '../types/domain';
 import { changeSession } from '../utils/sessionBoundary';
@@ -140,6 +141,7 @@ const decryptWorkspace = async (encryptedWorkspace: EncryptedPayload | undefined
         quotationSequence: workspace.quotationSequence || 0,
         stockRecords: Array.isArray(workspace.stockRecords) ? workspace.stockRecords : [],
         followUps: Array.isArray(workspace.followUps) ? workspace.followUps : [],
+        historicalSales: validateHistoricalSales(workspace.historicalSales || [], workspace.customers || []),
         invoiceSequences: workspace.invoiceSequences || {},
         settings: workspace.settings || {},
     };
@@ -339,6 +341,7 @@ const openBackup = async (text: string, password: string) => {
     const { profile, workspace: recoveredWorkspace, createdAt } = await decryptPayload(backup.payload, credentials.encryptionKey) as BackupContents;
     // Keep missing legacy fields visible to the validation below before filling defaults.
     const workspace = recoveredWorkspace as Workspace;
+    validateHistoricalSales(workspace.historicalSales || [], workspace.customers || []);
     if (!profile || typeof profile._id !== 'string' || typeof profile.email !== 'string' || !profile.email.includes('@') ||
         !workspace || !(['customers', 'products', 'bills'] as const).every(key => Array.isArray(workspace[key])) ||
         typeof createdAt !== 'string') throw new Error('Backup contents are invalid.');
@@ -424,7 +427,7 @@ const localData: BrowserDataClient = {
         return { email: user.email, businessName: user.businessName, createdAt,
             customers: workspace.customers.length, products: workspace.products.length, invoices: workspace.bills.length, drafts: (workspace.invoiceDrafts || []).length,
             quotations: (workspace.quotations || []).length, templates: (workspace.invoiceTemplates || []).length,
-            followUps: (workspace.followUps || []).length, trackedProducts: (workspace.stockRecords || []).length };
+            historicalSales: (workspace.historicalSales || []).length, followUps: (workspace.followUps || []).length, trackedProducts: (workspace.stockRecords || []).length };
     },
 
     async restoreBackup(text, password) {
@@ -580,6 +583,20 @@ const localData: BrowserDataClient = {
         return publicUser(user);
     },
 
+    async getHistoricalSales() { return (await requireSession(readDatabase())).workspace.historicalSales || []; },
+    async previewHistoricalSales(payload, links) {
+        const { workspace, user } = await requireSession(readDatabase());
+        return { ...planHistoricalSales(payload, workspace.historicalSales || [], workspace.customers, links), revision: 0, digest: historyFingerprint(workspace, user._id, payload, links) };
+    },
+    async commitHistoricalSales(payload, links, preview, confirmation) {
+        return updateWorkspace((workspace, user) => {
+            if (confirmation !== 'IMPORT') throw new Error('Type IMPORT to confirm this import.');
+            if (preview.digest !== historyFingerprint(workspace, user._id, payload, links)) throw new Error('The workspace or import changed. Review it again.');
+            const proposed = planHistoricalSales(payload, workspace.historicalSales || [], workspace.customers, links);
+            workspace.historicalSales = [...(workspace.historicalSales || []), ...proposed.records];
+            return { imported: proposed.records.length, duplicates: proposed.duplicates };
+        });
+    },
     async getCustomers() {
         return [...(await requireSession(readDatabase())).workspace.customers];
     },
@@ -616,6 +633,7 @@ const localData: BrowserDataClient = {
 
     async removeCustomer(id) {
         return updateWorkspace(workspace => {
+            if ((workspace.historicalSales || []).some(row => row.customerId === id)) throw new Error('This customer is referenced by imported historical purchases.');
             if (workspace.bills.some(bill => bill.customer === id)) {
                 throw new Error('This customer is used by an invoice and cannot be deleted.');
             }

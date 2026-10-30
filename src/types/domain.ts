@@ -28,7 +28,9 @@ export interface StockInput { product: string; unit?: string; onHand?: NumericIn
 export interface FollowUpEvent { _id?: string; action: string; at: string; date?: string; dueDate?: string; outcome?: string; actor?: string; priority?: string; channel?: string; purpose?: string; title?: string; notes?: string }
 export interface FollowUp { _id: string; customer: string; customerName: string; title: string; dueDate: string; priority: string; channel: string; purpose: string; notes?: string; status: 'open' | 'completed'; revision: number; history: FollowUpEvent[]; createdAt?: string; updatedAt?: string }
 export type FollowUpInput = Partial<Omit<FollowUp, '_id' | 'history'>>;
-export interface Workspace { customers: Customer[]; products: Product[]; bills: Invoice[]; invoiceDrafts: Draft[]; quotations: Quotation[]; invoiceTemplates: InvoiceTemplate[]; stockRecords: StockRecord[]; followUps: FollowUp[]; settings: Partial<BusinessSettings>; invoiceSequences: Record<string, number>; quotationSequence: number }
+export interface HistoricalSale { _id: string; source: 'customer-insights'; sourceId: string; name: string; phone: string; date: string; amountMinor: number; customerId: string; createdAt: string; updatedAt: string }
+export interface HistoricalSalesPreview { records: HistoricalSale[]; sourceCount: number; duplicates: number; digest: string; revision: number }
+export interface Workspace { historicalSales?: HistoricalSale[]; customers: Customer[]; products: Product[]; bills: Invoice[]; invoiceDrafts: Draft[]; quotations: Quotation[]; invoiceTemplates: InvoiceTemplate[]; stockRecords: StockRecord[]; followUps: FollowUp[]; settings: Partial<BusinessSettings>; invoiceSequences: Record<string, number>; quotationSequence: number }
 export type CollectionName = 'customers' | 'products' | 'bills' | 'invoiceDrafts' | 'quotations' | 'invoiceTemplates' | 'stockRecords' | 'followUps';
 export interface EncryptedPayload { version: 2; iv: string; ciphertext: string }
 export interface StoredUser extends UserProfile { passwordHash?: string; passwordSalt?: string; passwordVerifier?: string; authVersion?: number; failedAttempts?: number; lockedUntil?: number }
@@ -36,7 +38,7 @@ export interface BrowserDatabase { users: StoredUser[]; workspaces: Record<strin
 export interface BrowserSession { userId: string; workspaceKey: string; token: string; expiresAt: number }
 export interface PaymentInput { amount: NumericInput; date: string; method: string; reference?: string }
 export interface CorrectionInput { action: string; reason?: string; paymentId?: string }
-export interface BackupPreview { email: string; businessName: string; createdAt: string; customers: number; products: number; invoices: number; drafts: number; quotations: number; templates: number; followUps: number; trackedProducts: number }
+export interface BackupPreview { historicalSales?: number; email: string; businessName: string; createdAt: string; customers: number; products: number; invoices: number; drafts: number; quotations: number; templates: number; followUps: number; trackedProducts: number }
 export interface TransferPayload { format: 'billflow-workspace'; version: 1; workspace: Pick<Workspace, 'customers' | 'products' | 'bills'> & Partial<Workspace>; profile?: UserProfile; createdAt?: string }
 export interface ImportPreview { digest: string; revision: number; counts: Record<CollectionName, number>; canImport: boolean }
 export interface PublicConfig { csrfToken: string; supportEmail?: string; providers?: string[] }

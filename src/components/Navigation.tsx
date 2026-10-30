@@ -81,6 +81,7 @@ function Navigation({ history }: Pick<RouteComponentProps, 'history'>) {
                 {navItem('/billing', 'Invoices', <ReceiptRoundedIcon />)}
                 {navItem('/receivables', 'Collections', <AssessmentRoundedIcon />)}
                 {navItem('/customer', 'Customers', <PeopleAltRoundedIcon />)}
+                {navItem('/customer-insights', 'Customer insights', <AssessmentRoundedIcon />)}
                 {navItem('/product', 'Products', <InventoryRoundedIcon />)}
                 {navItem('/statements', 'Statements', <FileSpreadsheet />)}
                 {navItem('/settings', 'Settings', <SettingsRoundedIcon />)}

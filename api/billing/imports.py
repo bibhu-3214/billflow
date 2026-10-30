@@ -315,6 +315,9 @@ def validate(payload):
                 valid_date(event.get("dueDate"))
         if (history[-1]["action"] == "completed") != (task["status"] == "completed"):
             raise DomainError("Follow-up status differs from history.")
+    from .historical import validate_saved
+
+    state["historicalSales"] = validate_saved(state["historicalSales"], state["customers"])
     return state
 
 

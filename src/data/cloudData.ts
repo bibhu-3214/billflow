@@ -124,7 +124,7 @@ export function createCloudData(fetcher: FetchTransport = (path, options) => fet
         return { user };
     };
     const auth = (path: string, values: unknown, pending = false) => request(authRoot + path, { method: 'POST', values, pending });
-    type BaseClient = Pick<CloudClient, 'isCloud' | 'publicConfig' | 'auth' | 'initialize' | 'hasActiveSession' | 'getCurrentUser' | 'register' | 'login' | 'clearSession' | 'openDemo' | 'exportWorkspace' | 'previewImport' | 'commitImport' | 'deleteAccount'>;
+    type BaseClient = Pick<CloudClient, 'isCloud' | 'publicConfig' | 'auth' | 'initialize' | 'hasActiveSession' | 'getCurrentUser' | 'register' | 'login' | 'clearSession' | 'openDemo' | 'getHistoricalSales' | 'previewHistoricalSales' | 'commitHistoricalSales' | 'exportWorkspace' | 'previewImport' | 'commitImport' | 'deleteAccount'>;
     const base: BaseClient = {
         isCloud: true, publicConfig, auth,
         async initialize() {
@@ -158,6 +158,9 @@ export function createCloudData(fetcher: FetchTransport = (path, options) => fet
             broadcast();
         },
         async openDemo() { throw new Error('The sample workspace is available in the separate local build.'); },
+        getHistoricalSales: () => request<Awaited<ReturnType<CloudClient['getHistoricalSales']>>>(root + 'actions/getHistoricalSales', { method: 'POST', values: { args: [] } }),
+        previewHistoricalSales: (payload, links) => request<Awaited<ReturnType<CloudClient['previewHistoricalSales']>>>(root + 'historical-sales/preview', { method: 'POST', values: { payload, links } }),
+        commitHistoricalSales: (payload, links, preview, confirmation) => request<Awaited<ReturnType<CloudClient['commitHistoricalSales']>>>(root + 'historical-sales/commit', { method: 'POST', values: { payload, links, digest: preview.digest, revision: preview.revision, confirmation } }),
         exportWorkspace: () => request<Awaited<ReturnType<CloudClient['exportWorkspace']>>>(root + 'workspace'),
         previewImport: payload => request<Awaited<ReturnType<CloudClient['previewImport']>>>(root + 'import/preview', { method: 'POST', values: payload }),
         commitImport: values => request(root + 'import/commit', { method: 'POST', values }),

@@ -19,6 +19,7 @@ COLLECTIONS = [
     "invoiceTemplates",
     "stockRecords",
     "followUps",
+    "historicalSales",
 ]
 
 

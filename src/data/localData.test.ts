@@ -8,6 +8,32 @@ Object.defineProperty(window, 'crypto', { configurable: true, value: webcrypto }
 import localData from './browserData';
 
 describe('secure local data', () => {
+    test('reviewed historical purchases persist through encryption and backups and cannot cross accounts', async () => {
+        const account = { username: 'History owner', email: 'history@example.com', password: 'StrongLocal#123', businessName: 'History business', address: 'Mumbai' };
+        await localData.register(account); await localData.login(account);
+        const customer = await localData.addCustomer({name:'History buyer',mobile:'1234567890',email:'historybuyer@example.com'});
+        const stamp = {createdAt:'2026-10-30T09:00:00.000Z',updatedAt:'2026-10-30T09:00:00.000Z'};
+        const source = {version:1,product:'customer-insights',records:[{...stamp,id:'purchase',name:'History buyer',phone:'1234567890',date:'2026-10-30',amountMinor:29}]};
+        const links = {'1234567890':customer._id};
+        const preview = await localData.previewHistoricalSales(source,links);
+        expect(await localData.getHistoricalSales()).toEqual([]);
+        await expect(localData.commitHistoricalSales(source,links,preview,'no')).rejects.toThrow();
+        expect(await localData.commitHistoricalSales(source,links,preview,'IMPORT')).toEqual({imported:1,duplicates:0});
+        await expect(localData.commitHistoricalSales(source,links,preview,'IMPORT')).rejects.toThrow();
+        expect((await localData.getHistoricalSales())[0]).toMatchObject({amountMinor:29,customerId:customer._id});
+        expect(await localData.getBills()).toEqual([]);
+        await expect(localData.removeCustomer(customer._id)).rejects.toThrow('historical');
+        const backup = await localData.exportBackup();
+        expect(backup).not.toContain('History buyer');
+        expect(await localData.previewBackup(backup,account.password)).toMatchObject({historicalSales:1,invoices:0});
+        localData.clearSession(); localStorage.clear();
+        await localData.restoreBackup(backup,account.password); await localData.login(account);
+        expect((await localData.getHistoricalSales())[0]).toMatchObject({amountMinor:29,customerId:customer._id});
+        localData.clearSession();
+        await localData.register({...account,email:'history-other@example.com'});await localData.login({...account,email:'history-other@example.com'});
+        expect(await localData.getHistoricalSales()).toEqual([]);
+    });
+
     test('retains customer billing defaults and catalog metadata through edits', async () => {
         const account = { username: 'Owner', email: 'profiles@example.com', password: 'StrongLocal#123', businessName: 'Shop', address: 'Mumbai' };
         await localData.register(account); await localData.login(account);

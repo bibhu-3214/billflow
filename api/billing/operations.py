@@ -81,6 +81,10 @@ class Operations:
         rows.append(record)
 
     def remove(self, kind, key):
+        if kind == "customers" and any(
+            row.get("customerId") == key for row in self.s.get("historicalSales", [])
+        ):
+            raise DomainError("This customer is referenced by imported historical purchases.")
         record = require(self.s[kind], key)
         self.s[kind].remove(record)
         return record
