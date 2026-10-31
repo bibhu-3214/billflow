@@ -2,7 +2,7 @@ import { ui } from '../styles/ui';
 import { Search as SearchRoundedIcon } from 'lucide-react';
 import { DialogTitle, DialogContent, TextField, Button } from './ui/primitives';
 import { useAppSelector as useSelector } from '../Redux/hooks';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useHistory } from 'react-router-dom';
 
@@ -39,8 +39,9 @@ export default function WorkspaceSearch() {
             .filter(item => `${item.name} ${item.detail || ''} ${item.type}`.toLowerCase().includes(value)).slice(0, 12);
     }, [query, customers, bills]);
     const go = (result: SearchResult) => { history.push(result.path); setOpen(false); setQuery(''); };
-    return <><button className={ui("workspace-search-trigger")} aria-label='Search workspace (Control or Command K)' onClick={() => setOpen(true)}><SearchRoundedIcon /><span>Search</span><kbd>⌘ / Ctrl K</kbd></button>
-        <WorkspaceDialog open={open} onClose={() => setOpen(false)} aria-labelledby='workspace-search-title'>
+    const trigger = useRef<HTMLButtonElement>(null);
+    return <><button ref={trigger} className={ui("workspace-search-trigger")} aria-keyshortcuts='Control+K Meta+K' title='Search workspace (Control or Command K)' onClick={() => setOpen(true)}><SearchRoundedIcon /><span className="workspace-search-label" aria-hidden="true">Search</span><span className="sr-only">Search workspace</span><kbd aria-hidden="true">⌘ / Ctrl K</kbd></button>
+        <WorkspaceDialog restoreFocusRef={trigger} open={open} onClose={() => setOpen(false)} aria-labelledby='workspace-search-title'>
             <DialogTitle id='workspace-search-title'>Find your next action</DialogTitle><DialogContent>
                 <TextField id='global-search' autoFocus fullWidth label='Search pages, customers or invoices' value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && results.length) { e.preventDefault(); go(results[0]); } }} />
                 <div className={ui("workspace-search-results")}>{results.map(result => <button key={result.path} onClick={() => go(result)}><div><strong>{result.name}</strong>{result.detail && <small>{result.detail}</small>}</div><span>{result.type}</span></button>)}</div>

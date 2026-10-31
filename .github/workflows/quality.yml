@@ -24,6 +24,8 @@ jobs:
       - run: yarn test:tooling
       - run: yarn build
       - run: yarn build:connected
+      - run: yarn playwright install --with-deps chromium
+      - run: yarn test:a11y
   api-and-browser:
     runs-on: ubuntu-latest
     timeout-minutes: 20

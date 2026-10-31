@@ -31,7 +31,7 @@ test('separates workspace identity, utilities and labelled primary navigation', 
     expect(screen.getByText('Sample workspace')).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Primary navigation' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Products' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: 'Open business settings for Asha' })).toHaveAttribute('href', '/settings');
+    expect(screen.getByRole('link', { name: 'Asha Business settings' })).toHaveAttribute('href', '/settings');
     expect(screen.getByRole('button', { name: 'Sign out' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Search workspace/ })).toBeInTheDocument();
 });
@@ -40,7 +40,7 @@ test('uses honest local-workspace and account fallbacks', () => {
     setup();
     expect(screen.getByText('Your workspace')).toBeInTheDocument();
     expect(screen.getByText('Local workspace')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Open business settings for Business owner' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Business owner Business settings' })).toBeInTheDocument();
 });
 
 test('public header provides sign-in and registration without private utilities', () => {

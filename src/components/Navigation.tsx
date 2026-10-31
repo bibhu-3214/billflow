@@ -55,8 +55,8 @@ function Navigation({ history }: Pick<RouteComponentProps, 'history'>) {
     return (
         <> <header className={ui(`topbar flagship-header ${isLoggedIn ? 'workspace-header' : 'public-header'}`)}>
             <div className={isLoggedIn ? 'mx-auto flex min-h-[76px] max-w-[1600px] items-center gap-5 px-4 sm:px-6' : ui('header-main')}>
-            <Link to={isLoggedIn ? '/admin' : '/'} className={ui("brand")} aria-label='BillFlow home'>
-                <span className={ui("brand-mark")}><AssessmentRoundedIcon /></span>
+            <Link to={isLoggedIn ? '/admin' : '/'} className={ui("brand")} title='BillFlow home'>
+                <span className={ui("brand-mark")} aria-hidden="true"><AssessmentRoundedIcon /></span>
                 <span className={ui("header-brand-copy")}><span className={ui("brand-word")}>Bill<span>Flow</span></span><span className={ui("brand-caption")}>Business, in focus.</span></span>
             </Link>
             {isLoggedIn ? <>
@@ -64,7 +64,7 @@ function Navigation({ history }: Pick<RouteComponentProps, 'history'>) {
                 <div className={ui("header-tools")}>
                     <WorkspaceSearch />
                     <ThemeToggle />
-                    <Tooltip title={`${accountName} · Business settings`} arrow><Link to='/settings' className={ui("header-account")} aria-label={`Open business settings for ${accountName}`}><span className={ui("header-account-avatar")} aria-hidden='true'>{accountName.trim().charAt(0).toUpperCase() || 'B'}</span><span className={ui("header-account-copy")}><strong>{accountName}</strong><small>Business settings</small></span></Link></Tooltip>
+                    <Tooltip title={`${accountName} · Business settings`} arrow><Link to='/settings' className={ui("header-account")} ><span className={ui("header-account-avatar")} aria-hidden='true'>{accountName.trim().charAt(0).toUpperCase() || 'B'}</span><span className={ui("header-account-copy")} aria-hidden="true"><strong>{accountName}</strong><small>Business settings</small></span><span className="sr-only">{accountName} Business settings</span></Link></Tooltip>
                     <Tooltip title='Sign out' arrow><button className={ui("signout-button")} aria-label='Sign out' onClick={handleLogout} type='button'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.6' strokeLinecap='round' strokeLinejoin='round' aria-hidden='true' focusable='false'><path d='M9 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M14 8l4 4-4 4M8 12h10' /></svg></button></Tooltip>
                 </div>
             </> : <div className={ui("header-tools")}><ThemeToggle /><nav aria-label='Primary navigation'><ul className={ui("nav-links public-nav")}>

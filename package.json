@@ -41,7 +41,8 @@
     "lint": "eslint src --max-warnings 0",
     "lint:app": "eslint src --ignore-pattern '**/*.test.{ts,tsx}' --ignore-pattern 'src/testing/**' --max-warnings 0",
     "lint:native": "eslint native --max-warnings 0",
-    "check": "npm run typecheck && npm run lint"
+    "check": "npm run typecheck && npm run lint",
+    "test:a11y": "playwright test -c playwright.accessibility.config.cjs"
   },
   "browserslist": {
     "production": [
@@ -60,6 +61,7 @@
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
     "@babel/core": "^7.29.7",
     "@babel/preset-env": "^7.29.0",
     "@babel/preset-react": "^7.28.5",

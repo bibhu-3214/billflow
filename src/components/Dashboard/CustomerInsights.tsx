@@ -119,7 +119,7 @@ export default function CustomerInsights() {
     }
     const totalHistorical = sales.reduce((sum, sale) => sum + sale.amountMinor, 0);
     return (
-        <main className={ui('workspace-page page-enter finance-workspace')}>
+        <section className={ui('workspace-page page-enter finance-workspace')}>
             <header className="mb-7 flex flex-wrap items-start justify-between gap-5">
                 <div>
                     <p className="text-[10px] font-semibold tracking-[.18em] text-primary uppercase">
@@ -469,6 +469,6 @@ export default function CustomerInsights() {
                     <Button onClick={() => setHistory(null)}>Close history</Button>
                 </DialogActions>
             </WorkspaceDialog>
-        </main>
+        </section>
     );
 }
