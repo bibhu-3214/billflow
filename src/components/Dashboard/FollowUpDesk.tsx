@@ -1,5 +1,5 @@
 import Disclosure from '../ui/Disclosure';
-import { ui } from '../../styles/ui';
+import { ui } from '../../styles/workspaceUi';
 import { type TextFieldProps, Button, TextField, MenuItem } from '../ui/primitives';
 import type { FormEvent } from 'react';
 

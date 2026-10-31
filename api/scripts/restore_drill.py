@@ -14,6 +14,7 @@ from psycopg.conninfo import conninfo_to_dict, make_conninfo
 
 
 def main():
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.test")
     django.setup()
     from django.conf import settings

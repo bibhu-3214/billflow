@@ -1,4 +1,4 @@
-import { ui } from '../../../styles/ui';
+import { ui } from '../../../styles/workspaceUi';
 import { Button, TextField, MenuItem } from '../../ui/primitives';
 import type { Invoice } from '../../../types/domain';
 import { asAppError } from '../../../types/domain';

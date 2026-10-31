@@ -28,12 +28,12 @@
   "scripts": {
     "dev": "node scripts/dev-local.mjs",
     "start": "vite --host 127.0.0.1 --port 3000 --strictPort",
-    "build": "npm run lint:app && tsc --noEmit -p tsconfig.app.json && vite build",
+    "build": "npm run check:styles && npm run lint:app && tsc --noEmit -p tsconfig.app.json && vite build",
     "test": "jest",
     "test:tooling": "node --test scripts/*.test.cjs",
     "test:browser": "playwright test",
     "pdf:samples": "node scripts/pdf-samples.cjs output/pdf",
-    "build:connected": "npm run lint:app && tsc --noEmit -p tsconfig.app.json && REACT_APP_ACCOUNT_BACKEND=django vite build",
+    "build:connected": "npm run check:styles && npm run lint:app && tsc --noEmit -p tsconfig.app.json && REACT_APP_ACCOUNT_BACKEND=django vite build",
     "preview": "vite preview --host 127.0.0.1 --port 3000 --strictPort",
     "setup:local": "node scripts/setup-local.mjs",
     "dev:local": "node scripts/dev-local.mjs",
@@ -41,8 +41,13 @@
     "lint": "eslint src --max-warnings 0",
     "lint:app": "eslint src --ignore-pattern '**/*.test.{ts,tsx}' --ignore-pattern 'src/testing/**' --max-warnings 0",
     "lint:native": "eslint native --max-warnings 0",
-    "check": "npm run typecheck && npm run lint",
-    "test:a11y": "playwright test -c playwright.accessibility.config.cjs"
+    "check": "npm run check:styles && npm run typecheck && npm run lint",
+    "test:a11y": "playwright test -c playwright.accessibility.config.cjs",
+    "check:styles": "node scripts/check-style-recipes.cjs",
+    "check:bundle": "node scripts/check-bundle.mjs",
+    "test:restore": "api/.venv/bin/python api/scripts/with_local_postgres.py --temporary -- scripts/restore_drill.py",
+    "test:e2e:cross": "playwright test -c playwright.cross.config.cjs",
+    "test:budgets": "node --test scripts/check-bundle.test.mjs"
   },
   "browserslist": {
     "production": [

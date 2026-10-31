@@ -1,4 +1,4 @@
-import { ui } from '../../../styles/ui';
+import { ui } from '../../../styles/workspaceUi';
 import { TextField, MenuItem, Button } from '../../ui/primitives';
 import type { BusinessSettings } from '../../../types/domain';
 import { asAppError } from '../../../types/domain';

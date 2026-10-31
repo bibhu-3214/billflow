@@ -1,4 +1,4 @@
-import { ui } from '../../../styles/ui';
+import { ui } from '../../../styles/workspaceUi';
 import { Plus as AddIcon, Search as Search, Users as PeopleAltRoundedIcon } from 'lucide-react';
 import { Button, InputAdornment, Paper, Toolbar, Typography } from '../../ui/primitives';
 import { useAppSelector as useSelector } from '../../../Redux/hooks';

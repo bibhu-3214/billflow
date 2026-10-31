@@ -11,7 +11,7 @@ The first retail milestone is implemented in the web invoice and quotation edito
 | No scanner entry action | Press Enter to add a unique match; keyboard-style scanners can enter a saved SKU |
 | Scan text could submit the surrounding form | Enter in item search or add-quantity adds only an item; invoice issuance remains explicit |
 
-Exact SKU matches take priority over partial name matches. Leading zeros are retained and matching ignores surrounding whitespace/case. Duplicate SKUs require an explicit product selection. Unmatched/ambiguous input and invalid quantities retain the entry for correction. Successful additions return focus to search for the next item. Repeated additions remain separate editable lines, preserving per-line quantities and discounts.
+Exact SKU matches take priority over partial name matches. Leading zeros are retained and matching ignores surrounding whitespace/case. Duplicate SKUs require an explicit product selection. Unmatched/ambiguous input and invalid quantities retain the entry for correction. Successful additions return focus to search for the next item. At this first milestone, repeated additions remained separate editable lines. The later refinement below adds guarded quantity merging.
 
 The existing 100-line limit remains enforced. Invoice review, drafts, quotation conversion, immutable issued details, domestic tax calculations and manual payment recording continue through their existing paths. No database migration is needed: lookup uses existing catalog metadata and saves the same product references.
 
@@ -39,3 +39,7 @@ Validation: strict types/no-any lint, 140 tests in 35 suites, three tooling chec
 - Customer delivery/payment integrations, with providers and send/payment actions explicitly configured.
 
 These are follow-up candidates, not delivered features. The current public-release and native-device limits remain in [delivery status](DELIVERY-STATUS.md).
+
+## Recurring plans and repeated-item refinement — 31 October 2026
+
+The local product-workflow pass adds guarded repeated-item quantity merging and weekly/monthly recurring plans. Plans prepare a draft for explicit review; issuance and invoice numbering stay in the existing invoice studio. Current prices, stale revisions, failed saves, cancelled sources and month-end scheduling are covered by regression tests. See [PRODUCT-WORKFLOWS.md](PRODUCT-WORKFLOWS.md) and its companion validation record for the current behavior and evidence.

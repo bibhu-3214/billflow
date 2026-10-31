@@ -1,6 +1,6 @@
 import Disclosure from '../ui/Disclosure';
 import {fileInputClass} from '../ui/fileStyles';
-import { ui } from '../../styles/ui';
+import { ui } from '../../styles/workspaceUi';
 import { Button, TextField } from '../ui/primitives';
 import type { TransferPayload, ImportPreview } from '../../types/domain';
 import { asAppError } from '../../types/domain';

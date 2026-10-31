@@ -61,9 +61,19 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
 export const MenuItem = (props: OptionHTMLAttributes<HTMLOptionElement>) => <option {...props} />;
 export function Tooltip({children, title}: {children: ReactNode; title: ReactNode; arrow?: boolean}) {
     const anchor = useRef<HTMLSpanElement>(null);
+    const [tooltipId] = useState(() => `workspace-tooltip-${++fieldSequence}`);
     const [position, setPosition] = useState<{left: number; top: number; below: boolean} | null>(null);
     const show = () => { const rect = anchor.current?.getBoundingClientRect(); if (rect) setPosition({left: Math.max(132, Math.min(rect.left + rect.width / 2, window.innerWidth - 132)), top: rect.top < 60 ? rect.bottom + 8 : rect.top - 8, below: rect.top < 60}); };
-    return <span ref={anchor} className='inline-flex min-w-0 align-middle' onMouseEnter={show} onMouseLeave={() => setPosition(null)} onFocus={show} onBlur={() => setPosition(null)} onClick={() => setPosition(null)}>{children}{position && createPortal(<span role='tooltip' style={{left: position.left, top: position.top}} className={ui('pointer-events-none fixed z-[1500] w-max max-w-[min(240px,calc(100vw-24px))] -translate-x-1/2 rounded-lg bg-ink px-2.5 py-1.5 text-center text-xs text-canvas shadow-lg', !position.below && '-translate-y-full')}>{title}</span>, document.body)}</span>;
+    const trigger = React.isValidElement<{ 'aria-describedby'?: string }>(children) ? React.cloneElement(children, {
+        'aria-describedby': position ? [children.props['aria-describedby'], tooltipId].filter(Boolean).join(' ') : children.props['aria-describedby']
+    }) : children;
+    return <span ref={anchor} className='inline-flex min-w-0 align-middle' onMouseEnter={show} onMouseLeave={() => setPosition(null)} onFocus={show} onBlur={() => setPosition(null)} onClick={() => setPosition(null)} onKeyDown={event => {if(event.key === 'Escape')setPosition(null);}}>
+        {trigger}
+        {position && <>
+            <span id={tooltipId} role='tooltip' className='sr-only'>{title}</span>
+            {createPortal(<span aria-hidden='true' style={{left: position.left, top: position.top}} className={ui('pointer-events-none fixed z-[1500] w-max max-w-[min(240px,calc(100vw-24px))] -translate-x-1/2 rounded-lg bg-ink px-2.5 py-1.5 text-center text-xs text-canvas shadow-lg', !position.below && '-translate-y-full')}>{title}</span>, document.body)}
+        </>}
+    </span>;
 }
 export function Switch({color: _color, className, ...props}: Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & {color?: string}) {
     return <span className='relative inline-flex shrink-0 items-center'><input type='checkbox' {...props} className={ui('peer sr-only', className)} /><span aria-hidden='true' className='h-6 w-11 rounded-full bg-line transition-colors peer-checked:bg-primary peer-focus-visible:outline-2 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-primary peer-disabled:opacity-40 after:absolute after:top-1 after:left-1 after:size-4 after:rounded-full after:bg-white after:shadow-sm after:transition-transform peer-checked:after:translate-x-5' /></span>;

@@ -1,3 +1,4 @@
+import { recurrenceFields, recurringDraft } from '../utils/recurring';
 import { historyFingerprint, planHistoricalSales, validateHistoricalSales } from '../utils/historicalSales';
 import type { BrowserDataClient } from '../types/data';
 import type { BrowserDatabase, BrowserSession, StoredUser, UserProfile, Workspace, EncryptedPayload, EncryptedBackup, BackupContents, ProductInput, CustomerInput, DraftInput, FollowUpInput, InvoiceTemplate, InvoiceLineInput, Quotation, FollowUp, StockRecord, StockMovement, BusinessSettings, Invoice } from '../types/domain';
@@ -302,7 +303,8 @@ const followUpValues = (values: FollowUpInput, workspace: Workspace, allowMissin
     if (!customer || customer.length > 100 || (!allowMissing && !workspace.customers.some(record => record._id === customer))) throw new Error('Choose an available customer.');
     if (!validDate(values.dueDate)) throw new Error('Choose a valid follow-up date.');
     if (!['Phone', 'WhatsApp', 'Email', 'In person'].includes(values.channel || '') || !['Collection', 'Order enquiry', 'Account review'].includes(values.purpose || '') || !['Normal', 'High'].includes(values.priority || '')) throw new Error('Choose valid follow-up details.');
-    return { customer, title: cleanText(values.title, 'Follow-up title', 80), dueDate: values.dueDate, channel: values.channel!, purpose: values.purpose!, priority: values.priority!, notes: optionalText(values.notes, 'Follow-up notes', 1000) };
+    const recurrence = recurrenceFields(values.recurrence, workspace, customer);
+    return { customer, title: cleanText(values.title, 'Follow-up title', 80), dueDate: values.dueDate, channel: values.channel!, purpose: values.purpose!, priority: values.priority!, notes: optionalText(values.notes, 'Follow-up notes', 1000), ...(recurrence ? {recurrence} : {}) };
 };
 const quotationValues = (values: DraftInput, workspace: Workspace, allowMissing = false) => {
     const record = draftValues(values, workspace, allowMissing);
@@ -716,7 +718,7 @@ const localData: BrowserDataClient = {
             if (id && (!record || record.revision !== revision)) throw new Error('Follow-up changed or is unavailable. Close and reopen to refresh.');
             if (record?.status === 'completed') throw new Error('Reopen this follow-up before editing.');
             if ((record?.history.length || 0) >= 100 || (!record && workspace.followUps.length >= 500)) throw new Error('Follow-up history limit reached. Export a backup; no history was removed.');
-            const fields = followUpValues(values, workspace);
+            const fields = followUpValues({...values, recurrence:values.recurrence??record?.recurrence}, workspace);
             const now = new Date().toISOString();
             const updated: FollowUp = { ...fields, _id: record?._id || createId('followup'), customerName: workspace.customers.find(customer => customer._id === fields.customer)!.name,
                 status: 'open', revision: (record?.revision || 0) + 1, createdAt: record?.createdAt || now, updatedAt: now,
@@ -735,6 +737,20 @@ const localData: BrowserDataClient = {
             record.status = status as FollowUp['status']; record.revision += 1; record.updatedAt = new Date().toISOString();
             record.history.push({ action: status === 'completed' ? 'completed' : 'reopened', at: record.updatedAt, outcome: note });
             return record;
+        });
+    },
+    async prepareRecurringInvoice(id, revision) {
+        return updateWorkspace(workspace=>{
+            const record=workspace.followUps.find(record=>record._id===id);
+            if(!record || record.revision!==revision)throw new Error('The plan changed. Reload before preparing another draft.');
+            if(record.history.length>=100 || workspace.invoiceDrafts.length>=200)throw new Error('The draft or plan history limit was reached.');
+            const prepared=recurringDraft(record,workspace,today());
+            const at=new Date().toISOString();
+            const draft={...draftValues(prepared.values,workspace),_id:createId('draft'),revision:1,createdAt:at,updatedAt:at};
+            workspace.invoiceDrafts.push(draft);
+            record.dueDate=prepared.nextDate;record.revision++;record.updatedAt=at;
+            record.history.push({action:'updated',at,dueDate:record.dueDate,title:'Invoice draft prepared',draftId:draft._id});
+            return draft;
         });
     },
     async getInvoiceDrafts() {

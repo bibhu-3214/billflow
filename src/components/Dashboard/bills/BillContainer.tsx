@@ -1,4 +1,5 @@
-import { ui } from '../../../styles/ui';
+import RecurringPlans from './RecurringPlans';
+import { ui } from '../../../styles/workspaceUi';
 import { Plus as AddIcon, ArrowRight as ArrowForwardRoundedIcon } from 'lucide-react';
 import { Button, TextField, MenuItem } from '../../ui/primitives';
 import { useAppSelector as useSelector } from '../../../Redux/hooks';
@@ -20,7 +21,7 @@ export default function BillContainer() {
     const history=useHistory(), location=useLocation();
     const params=new URLSearchParams(location.search);
     const requestedView=params.get('view');
-    const view=requestedView==='drafts'||requestedView==='quotations'?requestedView:'invoices';
+    const view=requestedView==='drafts'||requestedView==='quotations'||requestedView==='recurring'?requestedView:'invoices';
     const setView=(next:string)=>{const query=new URLSearchParams(location.search);query.set('view',next);history.replace({pathname:location.pathname,search:query.toString()});};
     const [openPopup, setOpenPopup] = useState(false);
     const [editingDraft, setEditingDraft] = useState<Draft | null>(null);
@@ -60,8 +61,9 @@ export default function BillContainer() {
         <div className={ui("finance-metrics")}>{[['Outstanding balance', total('balance'), 'Across all open invoices'], ['Recorded payments', total('paid'), 'Manual receipts, net of reversals'], ['Overdue balance', totalAmounts(rows.filter(r=>r.overdueDays>0).map(r=>r.balance)), 'Ready for follow-up']].map(([label, value, detail]) => <article key={label}><span>{label}</span><strong>{money(value)}</strong><small>{detail}</small></article>)}</div>
         <div className={ui("collection-callout")}><div><strong>A clearer path to getting paid</strong><p>Review aging balances and prepare a customer reminder.</p></div><Button asChild  endIcon={<ArrowForwardRoundedIcon />}><Link to='/receivables'>Open collections</Link></Button></div>
         <nav aria-label='Billing views' className='my-6 flex gap-2 overflow-x-auto border-b border-line pb-3'>
-            {[['invoices','Issued invoices'],['drafts','Saved drafts'],['quotations','Offers & templates']].map(([key,label])=><Link key={key} to={{pathname:location.pathname,search:'?view='+key}} aria-current={view===key?'page':undefined} className={'shrink-0 rounded-xl px-4 py-2.5 text-xs font-semibold transition-colors '+(view===key?'bg-primary-soft text-primary':'text-muted hover:bg-primary-soft/50 hover:text-ink')}>{label}</Link>)}
+            {[['invoices','Issued invoices'],['drafts','Saved drafts'],['quotations','Offers & templates'],['recurring','Recurring plans']].map(([key,label])=><Link key={key} to={{pathname:location.pathname,search:'?view='+key}} aria-current={view===key?'page':undefined} className={'shrink-0 rounded-xl px-4 py-2.5 text-xs font-semibold transition-colors '+(view===key?'bg-primary-soft text-primary':'text-muted hover:bg-primary-soft/50 hover:text-ink')}>{label}</Link>)}
         </nav>
+        {view==='recurring' && <RecurringPlans onPrepared={draft=>{setQuotationMode(false);setEditingDraft(draft);setOpenPopup(true);setDraftRefresh(value=>value+1);}}/>}
         {view==='quotations' && <>
         <SalesPreparation hideCreateAction refreshKey={draftRefresh} onChanged={() => setDraftRefresh(value => value + 1)} onCreateQuotation={() => { setQuotationMode(true); setEditingDraft(null); setOpenPopup(true); }} onResumeDraft={draft => { setQuotationMode(false); setEditingDraft(draft); setOpenPopup(true); }} />
         </>}

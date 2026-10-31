@@ -1,4 +1,4 @@
-import { ui } from '../../../styles/ui';
+import { ui } from '../../../styles/workspaceUi';
 import { Pencil as EditTwoToneIcon, Trash2 as DeleteIcon, Package as LocalMallRoundedIcon } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableRow, TableContainer } from '../../ui/primitives';
 import { useAppDispatch as useDispatch } from '../../../Redux/hooks';

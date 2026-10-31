@@ -1,4 +1,4 @@
-import { ui } from '../../../styles/ui';
+import { ui } from '../../../styles/workspaceUi';
 import { useAppSelector as useSelector, useAppDispatch as useDispatch } from '../../../Redux/hooks';
 import type { RouteComponentProps } from 'react-router-dom';
 import type { Invoice } from '../../../types/domain';

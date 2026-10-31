@@ -270,3 +270,24 @@ test('failed storage writes retain the saved draft and leave numbering untouched
 });
 
 export {};
+
+test('recurring preparation uses current prices and advances one plan without issuing another invoice', async () => {
+    const {customer,product,input}=await setup();
+    const source=await localData.addBill(input);
+    const before=await localData.getBills();
+    const plan=await localData.saveFollowUp({customer:customer._id,title:'Monthly review',dueDate:today(),priority:'Normal',channel:'In person',purpose:'Account review',recurrence:{invoiceId:source._id,cadence:'monthly',anchorDay:31}});
+    await localData.editProduct(product._id,{...product,price:150});
+    const draft=await localData.prepareRecurringInvoice(plan._id,plan.revision);
+    expect(draft.lineItems[0].price).toBe(150);
+    expect(await localData.getBills()).toEqual(before);
+    expect((await localData.getFollowUps())[0].dueDate>today()).toBe(true);
+    await expect(localData.prepareRecurringInvoice(plan._id,plan.revision)).rejects.toThrow('changed');
+});
+test('failed recurring draft persistence leaves both the plan and draft desk unchanged', async () => {
+    const {customer,input}=await setup();const source=await localData.addBill(input);
+    const plan=await localData.saveFollowUp({customer:customer._id,title:'Weekly review',dueDate:today(),priority:'Normal',channel:'In person',purpose:'Account review',recurrence:{invoiceId:source._id,cadence:'weekly',anchorDay:1}});
+    const before=await localData.getFollowUps(), drafts=await localData.getInvoiceDrafts();
+    const storage=jest.spyOn(Storage.prototype,'setItem').mockImplementation(()=>{throw new Error('Storage full');});
+    await expect(localData.prepareRecurringInvoice(plan._id,plan.revision)).rejects.toThrow();storage.mockRestore();
+    expect(await localData.getFollowUps()).toEqual(before);expect(await localData.getInvoiceDrafts()).toEqual(drafts);
+});

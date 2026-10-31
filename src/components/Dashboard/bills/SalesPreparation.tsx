@@ -1,4 +1,4 @@
-import { ui } from '../../../styles/ui';
+import { ui } from '../../../styles/workspaceUi';
 import { Button, TextField } from '../../ui/primitives';
 import type { FormEvent } from 'react';
 import type { Quotation, InvoiceTemplate, Draft } from '../../../types/domain';

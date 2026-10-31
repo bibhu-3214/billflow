@@ -7,6 +7,7 @@ from django.db import transaction
 
 from .limits import preflight
 from .models import AuditEvent, Workspace
+from .recurring import recurrence_fields
 from .repository import digest, persist, snapshot, workspace_for
 from .rules import (
     COLLECTIONS,
@@ -289,6 +290,7 @@ def validate(payload):
         ):
             raise DomainError("Stock history does not match current balance.")
     for task in state["followUps"]:
+        recurrence_fields(task.get("recurrence"), state, task.get("customer"))
         text(task.get("customer"), "Customer ID", 100)
         text(task.get("customerName"), "Customer name")
         text(task.get("title"), "Task title", 80)

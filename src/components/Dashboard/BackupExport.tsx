@@ -1,4 +1,4 @@
-import { ui } from '../../styles/ui';
+import { ui } from '../../styles/workspaceUi';
 import { Button, TextField } from '../ui/primitives';
 import { asAppError } from '../../types/domain';
 import { captureSession } from '../../utils/sessionBoundary';

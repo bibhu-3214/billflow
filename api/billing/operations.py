@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 
+from .recurring import recurrence_fields, recurring_draft
 from .rules import (
     Conflict,
     DomainError,
@@ -470,8 +471,35 @@ class Operations:
                 {"action": "updated" if old else "created", "at": now(), "dueDate": v["dueDate"]},
             ],
         )
+        recurrence = recurrence_fields(
+            v.get("recurrence")
+            if v.get("recurrence") is not None
+            else (old or {}).get("recurrence"),
+            self.s,
+            customer["_id"],
+        )
+        if recurrence:
+            record["recurrence"] = recurrence
         self.put("followUps", record)
         return record
+
+    def prepare_recurring(self, key, revision):
+        record = require(self.s["followUps"], key, revision)
+        if len(record["history"]) >= 100:
+            raise DomainError("The plan history limit was reached.")
+        values, next_date = recurring_draft(record, self.s, today())
+        draft = self.save_draft(values)
+        record.update(dueDate=next_date, revision=record["revision"] + 1, updatedAt=now())
+        record["history"].append(
+            {
+                "action": "updated",
+                "at": now(),
+                "dueDate": next_date,
+                "title": "Invoice draft prepared",
+                "draftId": draft["_id"],
+            }
+        )
+        return draft
 
     def followup_status(self, key, revision, status, outcome):
         record = require(self.s["followUps"], key, revision)
@@ -506,6 +534,7 @@ class Operations:
             "saveSettings": (self.save_settings, 1),
             "recordStockMovement": (self.stock, 1),
             "saveFollowUp": (self.followup, 3),
+            "prepareRecurringInvoice": (self.prepare_recurring, 2),
             "setFollowUpStatus": (self.followup_status, 4),
             "saveInvoiceDraft": (self.save_draft, 3),
             "duplicateInvoiceDraft": (self.duplicate_draft, 2),
@@ -532,6 +561,7 @@ class Operations:
             action
             in [
                 "setFollowUpStatus",
+                "prepareRecurringInvoice",
                 "duplicateInvoiceDraft",
                 "removeInvoiceDraft",
                 "setQuotationStatus",

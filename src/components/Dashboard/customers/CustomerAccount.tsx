@@ -1,4 +1,4 @@
-import { ui } from '../../../styles/ui';
+import { ui } from '../../../styles/workspaceUi';
 import { Button } from '../../ui/primitives';
 import { useAppSelector as useSelector } from '../../../Redux/hooks';
 import type { Customer } from '../../../types/domain';

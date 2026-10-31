@@ -173,7 +173,7 @@ export function createCloudData(fetcher: FetchTransport = (path, options) => fet
     const cloud = base as CloudClient;
     const reads = ['getCustomers', 'getProducts', 'getBills', 'getBill', 'getSettings', 'getInvoiceDrafts', 'getQuotations', 'getInvoiceTemplates', 'getStockRecords', 'getFollowUps'];
     const writes = ['addCustomer', 'editCustomer', 'removeCustomer', 'addProduct', 'editProduct', 'removeProduct',
-        'saveSettings', 'recordStockMovement', 'saveFollowUp', 'setFollowUpStatus', 'saveInvoiceDraft', 'duplicateInvoiceDraft',
+        'saveSettings', 'recordStockMovement', 'prepareRecurringInvoice', 'saveFollowUp', 'setFollowUpStatus', 'saveInvoiceDraft', 'duplicateInvoiceDraft',
         'removeInvoiceDraft', 'saveQuotation', 'setQuotationStatus', 'saveInvoiceTemplate', 'removeInvoiceTemplate',
         'draftFromTemplate', 'addBill', 'recordPayment', 'correctInvoice', 'removeBill'];
     for (const operation of [...reads, ...writes]) (cloud as unknown as Record<string, (...args: unknown[]) => Promise<unknown>>)[operation] = (...args: unknown[]) => {

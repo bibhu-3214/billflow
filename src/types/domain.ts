@@ -25,8 +25,9 @@ export interface InvoiceInput extends Omit<DraftInput, 'lineItems'> { lineItems?
 export interface StockMovement { _id?: string; type: 'opening' | 'adjustment' | 'threshold'; delta: number; balance: number; reorderLevel: number; reason: string; date?: string; at: string; actor?: string }
 export interface StockRecord { name: string; product: string; unit: string; onHand: number; reorderLevel: number; revision: number; movements: StockMovement[] }
 export interface StockInput { product: string; unit?: string; onHand?: NumericInput; delta?: NumericInput; reorderLevel?: NumericInput; reason?: string; revision?: number; type?: string }
-export interface FollowUpEvent { _id?: string; action: string; at: string; date?: string; dueDate?: string; outcome?: string; actor?: string; priority?: string; channel?: string; purpose?: string; title?: string; notes?: string }
-export interface FollowUp { _id: string; customer: string; customerName: string; title: string; dueDate: string; priority: string; channel: string; purpose: string; notes?: string; status: 'open' | 'completed'; revision: number; history: FollowUpEvent[]; createdAt?: string; updatedAt?: string }
+export interface FollowUpEvent { draftId?: string; _id?: string; action: string; at: string; date?: string; dueDate?: string; outcome?: string; actor?: string; priority?: string; channel?: string; purpose?: string; title?: string; notes?: string }
+export interface Recurrence { invoiceId: string; cadence: 'weekly' | 'monthly'; anchorDay: number }
+export interface FollowUp { recurrence?: Recurrence; _id: string; customer: string; customerName: string; title: string; dueDate: string; priority: string; channel: string; purpose: string; notes?: string; status: 'open' | 'completed'; revision: number; history: FollowUpEvent[]; createdAt?: string; updatedAt?: string }
 export type FollowUpInput = Partial<Omit<FollowUp, '_id' | 'history'>>;
 export interface HistoricalSale { _id: string; source: 'customer-insights'; sourceId: string; name: string; phone: string; date: string; amountMinor: number; customerId: string; createdAt: string; updatedAt: string }
 export interface HistoricalSalesPreview { records: HistoricalSale[]; sourceCount: number; duplicates: number; digest: string; revision: number }

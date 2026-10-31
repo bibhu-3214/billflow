@@ -1,4 +1,4 @@
-import { ui } from '../../../styles/ui';
+import { ui } from '../../../styles/workspaceUi';
 import { FileText as DescriptionOutlinedIcon, Copy as FileCopyOutlinedIcon, Trash2 as DeleteOutlineRoundedIcon } from 'lucide-react';
 import { Button, TextField, IconButton, Tooltip } from '../../ui/primitives';
 import type { Draft, Product } from '../../../types/domain';

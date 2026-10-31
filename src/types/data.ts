@@ -44,6 +44,7 @@ export interface DataClient {
     getStockRecords(): Promise<StockRecord[]>;
     recordStockMovement(values: StockInput): Promise<StockRecord>;
     getFollowUps(): Promise<FollowUp[]>;
+    prepareRecurringInvoice(id: string, revision: number): Promise<Draft>;
     saveFollowUp(values: FollowUpInput, id?: string | null, revision?: number | null): Promise<FollowUp>;
     setFollowUpStatus(id: string, revision: number, status: string, outcome: string): Promise<FollowUp>;
     publicConfig?: () => Promise<PublicConfig>;

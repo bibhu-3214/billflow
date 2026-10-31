@@ -23,9 +23,13 @@ jobs:
       - run: yarn test --watchAll=false --runInBand
       - run: yarn test:tooling
       - run: yarn build
+      - run: yarn check:bundle
+      - run: yarn test:budgets
       - run: yarn build:connected
-      - run: yarn playwright install --with-deps chromium
+      - run: yarn check:bundle
+      - run: yarn playwright install --with-deps chromium firefox webkit
       - run: yarn test:a11y
+      - run: yarn test:e2e:cross
   api-and-browser:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -67,6 +71,7 @@ jobs:
       - run: npm install --global yarn@1.22.22
       - run: yarn install --frozen-lockfile --non-interactive
       - run: yarn build:connected
+      - run: yarn check:bundle
       - run: yarn pdf:samples
       - run: python scripts/verify-pdfs.py output/pdf
       - run: yarn playwright install --with-deps chromium

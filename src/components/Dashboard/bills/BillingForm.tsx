@@ -1,4 +1,5 @@
-import { ui } from '../../../styles/ui';
+import { addCartItem } from '../../../utils/cart';
+import { ui } from '../../../styles/workspaceUi';
 import { type TextFieldProps, Button, TextField, MenuItem, Switch, FormControlLabel } from '../../ui/primitives';
 import type { Draft, Quotation, InvoiceLineInput, Product } from '../../../types/domain';
 
@@ -70,13 +71,9 @@ export default function BillingForm({ setOpenPopup, initialDraft, onDraftSaved, 
     let totals: ReturnType<typeof calculateInvoice> | undefined, error: string | undefined;
     try { totals = calculateInvoice(items, values); } catch (caughtError) { const problem = asAppError(caughtError);  error = asAppError(problem).message; }
     const addProduct = (product: Product, quantity: number) => {
-        if (busy || !defaultsLoaded || items.length >= 100) return false;
-        setDirty(true);
-        setItems(current => current.length >= 100 ? current : [...current, {
-            product: product._id, name: product.name, price: product.price, quantity, discount: 0,
-            gstRate: product.gstRate ?? '', hsn: product.hsn || '', unit: product.unit || 'NOS',
-        }]);
-        return true;
+        if (busy || !defaultsLoaded) return false;
+        try {const next=addCartItem(items,product,quantity);setDirty(true);setItems(next);setSaveError('');return true;}
+        catch(error){setSaveError(asAppError(error).message);return false;}
     };
     const submit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -158,7 +155,7 @@ export default function BillingForm({ setOpenPopup, initialDraft, onDraftSaved, 
             {!values.gst && <p className={ui("studio-hint")}>GST is not being calculated for this {quotationMode ? 'quotation' : 'invoice'}.</p>}
             </section>
             <section className={ui("composer-section")}><header><span className={ui("editor-step")}>03</span><div><h3>Line items</h3><p>Use catalog defaults, then adjust quantities and discounts.</p></div></header>
-            <InvoiceItemPicker products={products} onAdd={addProduct} disabled={busy || !defaultsLoaded} limitReached={items.length >= 100} />
+            <InvoiceItemPicker products={products} onAdd={addProduct} disabled={busy || !defaultsLoaded}  />
             {items.map((item, index) => <section className={ui("studio-item")} key={index}>
                 <div className={ui("studio-item-title")}><strong>{item.name}{!products.some(product => product._id === item.product) && ' · Unavailable'}</strong><span>{money(item.price)} / {item.unit || 'unit'}</span><Button size='small' color='secondary' onClick={() => { setDirty(true); setItems(items.filter((_, i) => i !== index)); }}>Remove</Button></div>
                 <div className={ui("studio-grid")}>

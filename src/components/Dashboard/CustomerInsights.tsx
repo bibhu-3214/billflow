@@ -8,7 +8,7 @@ import { money } from '../../utils/indiaBilling';
 import { customerAccounts } from '../../utils/receivables';
 import { historicalCustomerGroups, parseCustomerInsights, phoneKey } from '../../utils/historicalSales';
 import { captureSession } from '../../utils/sessionBoundary';
-import { ui } from '../../styles/ui';
+import { ui } from '../../styles/workspaceUi';
 import WorkspaceDialog from '../WorkspaceDialog';
 import { Button, DialogActions, DialogContent, DialogTitle, MenuItem, TextField } from '../ui/primitives';
 

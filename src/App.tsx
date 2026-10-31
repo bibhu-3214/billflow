@@ -25,6 +25,18 @@ const Receivables = lazy(() => import('./components/Dashboard/Receivables'));
 const AccountRecovery = lazy(() => import('./components/Authentication/AccountRecovery'));
 const Help = lazy(() => import('./components/Help'));
 
+function PageLoading() {
+    return <div aria-busy='true' className='mx-auto max-w-[1200px] px-5 py-9'>
+        <p role='status' className='sr-only'>Opening page…</p>
+        <div aria-hidden='true' className='grid gap-6 motion-safe:animate-pulse'>
+            <div className='h-7 w-2/3 max-w-md rounded-lg bg-primary-soft'/>
+            <div className='h-3 w-1/2 max-w-sm rounded-full bg-line'/>
+            <div className='grid grid-cols-2 gap-4 lg:grid-cols-4'>{[0,1,2,3].map(key=><div key={key} className='h-32 rounded-2xl border border-line bg-surface'/>)}</div>
+            <div className='grid gap-5 lg:grid-cols-[1.7fr_1fr]'><div className='h-72 rounded-2xl border border-line bg-surface'/><div className='h-72 rounded-2xl border border-line bg-surface'/></div>
+        </div>
+    </div>;
+}
+
 const App = () => {
     const users = useSelector(state => state.users);
     const location = useLocation();
@@ -38,7 +50,7 @@ const App = () => {
                 {isDemo && <aside className={ui("demo-notice")} aria-label='Sample workspace'>
                     <strong>Sample workspace</strong> · Fictional data. Changes stay in this tab. Sign out and reopen the demo to reset.
                 </aside>}
-                <PageBoundary key={location.pathname}><Suspense fallback={<div role='status' className='mx-auto max-w-[1104px] px-5 py-12 text-sm text-muted'><span className='mb-4 block h-2 w-32 animate-pulse rounded-full bg-primary-soft motion-reduce:animate-none' />Opening page…</div>}>
+                <PageBoundary key={location.pathname}><Suspense fallback={<PageLoading />}>
                 <Switch>
                     <Route path='/account' component={AccountRecovery} exact />
                     <Route path='/help' component={Help} exact />

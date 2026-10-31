@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { ui } from '../../styles/ui';
+import { ui } from '../../styles/workspaceUi';
 import { ArrowRight as ArrowForwardRoundedIcon } from 'lucide-react';
 import { Button, TextField, MenuItem, DialogTitle, DialogContent, DialogActions } from '../ui/primitives';
 import { useAppSelector as useSelector } from '../../Redux/hooks';

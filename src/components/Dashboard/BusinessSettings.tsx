@@ -1,5 +1,5 @@
 import {fileInputClass} from '../ui/fileStyles';
-import { ui } from '../../styles/ui';
+import { ui } from '../../styles/workspaceUi';
 import { Button, TextField, MenuItem } from '../ui/primitives';
 import type { BusinessSettings as Settings } from '../../types/domain';
 import { asAppError } from '../../types/domain';

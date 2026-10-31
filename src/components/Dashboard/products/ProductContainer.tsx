@@ -1,6 +1,6 @@
 import {totalAmounts} from '../../../utils/overview';
 import {money} from '../../../utils/indiaBilling';
-import { ui } from '../../../styles/ui';
+import { ui } from '../../../styles/workspaceUi';
 import { Plus as AddIcon, Search, Package as LocalMallRoundedIcon } from 'lucide-react';
 import { Button, Typography, InputAdornment, Paper, Toolbar } from '../../ui/primitives';
 import { useAppSelector as useSelector } from '../../../Redux/hooks';
